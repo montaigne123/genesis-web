@@ -1,0 +1,2367 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SEO | GENESIS</title>
+    {% include 'header.html' %}
+    <style type="text/css">
+    .nav-tabs-custom>.nav-tabs>li>a {
+        color: #FFF;
+    }
+
+    .nav-tabs-custom>.nav-tabs {
+        margin-left: 25px;
+        margin-top: 2px;
+    }
+
+    .PositiveChangeInPosition {
+        color: #2ecc71;
+    }
+
+    .NegativeChangeInPosition {
+        color: #e74c3c;
+    }
+
+    .alert {
+        padding: 5px 35px;
+        margin-top: 10px;
+    }
+
+    #bulkImport {
+        text-decoration: underline;
+        color: #02b4b4;
+        cursor: pointer;
+    }
+
+    .blueColorLine {
+        text-decoration: underline;
+        color: #02b4b4;
+        cursor: pointer;
+    }
+
+    #bulkImportPopUp h4,
+    h3,
+    h2,
+    p {
+        color: #333;
+    }
+
+    #SpecficKeywordChart h4,
+    h3,
+    h2,
+    p {
+        color: #333;
+    }
+
+    #addDomain {
+        color: #333;
+        text-align: center;
+    }
+
+    #addDomain h3 {
+        color: #FFF;
+    }
+
+    .SpecficKeywordChartModal {
+        width: 70%;
+        margin: 80px auto;
+    }
+
+    #loaderBulkImport {
+        display: none;
+    }
+    </style>
+    {% include 'sidebar.html' %}
+    <!-- Content Wrapper. Contains page content (test)-->
+    <div id="loader">
+        <img src="{{ url_for('static', filename='loader/loader.gif') }}" width="50">
+    </div>
+        <div class="content-wrapper">
+            <!-- UI for adding a domain -->
+            <div class="row hideElement" id="addDomain">
+                <h3>Add your domain to get Keyword Ranking Tool!</h3>
+                <div class="col-md-6">
+                    <input type="text" id="domainNameToInput" name="domain" placeholder="www.domain.com" style="width: 85%;" required>
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-danger" onclick="addDomainInDB();" style="width: 60%;">Add Domain</button>
+                </div>
+            </div>
+            <!-- the actual UI -->
+            <!-- Content Header (Page header) -->
+            <div class="nav-tabs-custom topSection hideElement" id="actualUIForKeywordRankingTool">
+                <ul class="nav nav-tabs tabbedListItems">
+                    <li class="active"><a data-toggle="tab" href="#keywordRanks">Keyword Ranks</a></li>
+                    <li><a data-toggle="tab" href="#competitors">Competitors</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div id="keywordRanks" class="tab-pane fade in active">
+                        <section class="content-header">
+                            <div class="row" style="margin-top: -15px;margin-bottom: 15px;">
+                                <div class="col-md-2" style="margin-bottom: 10px;">
+                                    <!-- <div class="pickerContainer widget" style="width: 100%; "></div> -->
+                                    <select style="width: 100%; border-radius: 3px;" onchange="keywordsDate(this);" id="keywordsDateSelector">
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <select style="width: 100%; border-radius: 3px;" id="keywordsSelector" onchange="loadDataForASingleKeyword(this.value);">
+                                        <option>All Keywords</option>
+                                        <!-- <option>Keyword 1</option>
+            <option>Keyword 2</option>
+            <option>Keyword 3</option>
+            <option>Keyword 4</option>
+            <option>Keyword 5</option>
+            <option>Keyword 6</option> -->
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <select style="width: 100%; border-radius: 3px;" onchange="getLastPositionData(this.value);">
+                                        <option value="none">Last Position</option>
+                                        <option value="10">≤10</option>
+                                        <option value="30">≤30</option>
+                                        <option value="50">≤50</option>
+                                        <option value="70">≤70</option>
+                                        <option value="100">≤100</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1 col-md-offset-4">
+                                    <a class="btn btn-primary btn-sm leadSenseBtn" id="exportBtnArea" href="#"><i class="fa fa-download"></i> Export to CSV</a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="chart">
+                                        <canvas id="keywordRanksChart" width="510" height="150"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <!-- Main content -->
+                        <section class="content container-fluid sectionBlue">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <span>Add Keyword:</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <span>Assign to Group:</span>
+                                </div>
+                                <div class="col-md-3">
+                                </div>
+                                <div class="col-md-3">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3 showInLine">
+                                    <input type="text" class="inputTextTransparentBg" name="keyword" placeholder="keyword" id="keyword" onkeyup="removeSpecialCharacters(this);">
+                                </div>
+                                <div class="col-md-3 showInLine">
+                                    <input type="text" class="inputTextTransparentBg" name="group" placeholder="Group (Optional)" id="group">
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-sm skyblueRoundedBtn" onclick="addKeywordToDB([$('#keyword').val()], $('#group').val());"><i class="fa fa-plus"></i> Add</button> &nbsp;&nbsp;&nbsp;
+                                    <a id="bulkImport" data-toggle="modal" data-target="#bulkImportPopUp"><i class="fa fa-plus-circle"></i> Bulk Import</a>
+                                </div>
+                                <div class="col-md-3 showInLine">
+                                    <p class="blueColorLine" onclick="showManageKeywordsArea();">Manage Keywords</p>
+                                </div>
+                            </div>
+                            <!-- Bulk Import Popup -->
+                            <div id="bulkImportPopUp" class="modal fade" role="dialog">
+                                <div class="modal-dialog">
+                                    <!-- Bulk Import Popup content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Import from file</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><span>Select .csv file</span> ( one keyword per line )</p>
+                                            <input type="file" accept=".csv" name="keywordsCsvFile" class="form-control" id="keywordsCsvFile">
+                                            <h3 class="text-center">(OR)</h3>
+                                            <p>Keywords (Enter every keyword in a new line)</p>
+                                            <textarea id="multipleKeywords" class="form-control" rows="8"></textarea>
+                                            <p>Assign group</p>
+                                            <input type="text" name="multipleKeywordsGroup" id="multipleKeywordsGroup" class="form-control" value="default">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <img src="{{ url_for('static', filename='loader/loaderBulkImport.gif') }}" id="loaderBulkImport" width="50">
+                                            <button type="button" class="btn btn-default btn-warning pull-left" onclick="importKeywords();">Import Keywords</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            <p id="statusOfMultipleKeywordsUpload"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Bulk Import Popup -->
+                            <!-- Delete Confirmation Popup -->
+                            <div id="deleteConfirmKeywordsPopup" class="modal fade" role="dialog">
+                                <div class="modal-dialog">
+                                    <!-- Bulk Import Popup content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Are you sure to delete this keywords?</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p id="deleteConfirmKeywords"></p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default btn-warning pull-left" onclick="importKeywords();">Yes, Delete</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                                            <p id="statusOfMultipleKeywordsUpload"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Delete Confirmation Popup -->
+                            <div id="SpecficKeywordChart" class="modal fade" role="dialog">
+                                <div class="modal-dialog SpecficKeywordChartModal">
+                                    <!-- Bulk Import Popup content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title" id="SpecificKeywordTitle">Specific Keyword Title</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="chart">
+                                                <canvas id="SpecificKeywordChart" width="510" height="150"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer hidden">
+                                            <button type="button" class="btn btn-default btn-warning pull-left">Import Keywords</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="alert alert-success alert-dismissible fade in hidden" id="keywordAddNotification">
+                                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                        <p id="keywordAddNotificationContent"><strong>Success!</strong> This alert box could indicate a successful or positive action.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" style="padding-top: 25px;">
+                                <div class="col-md-12" id="rankingTableAreaWrapper">
+                                    <div class="box-body table-responsive">
+                                        <table id="rankingTable" class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sno</th>
+                                                    <th>Keyword</th>
+                                                    <th>Position</th>
+                                                    <th>Change</th>
+                                                    <th>Url</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="RankingtableBody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-12" id="manageKeywordsAreaWrapper">
+                                    <div class="box-body table-responsive">
+                                        <table id="manageKeywordsTable" class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sno</th>
+                                                    <th>Keyword</th>
+                                                    <th>Group</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="manageKeywordsTableBody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <!-- /.col-md-12 -->
+                            </div>
+                            <!--   <div id="tempData"></div> -->
+                            <!-- /.row -->
+                        </section>
+                        <!-- /.content -->
+                    </div>
+                    <!-- /.tab -->
+                    <div id="competitors" class="tab-pane fade in">
+                        <section class="content-header">
+                            <div class="row" style="margin-top: -15px;margin-bottom: 15px;">
+                                <!--     <div class="col-md-1 col-md-offset-1" style="margin-bottom: 10px;">
+
+        <div class="pickerContainer widget" style="width: 100%; "></div>
+        </div> -->
+                                <div class="col-md-3">
+                                    <select style="width: 100%; border-radius: 3px;" id="competitorsKeywordsSelector">
+                                        <option>All Keywords</option>
+                                        <!-- <option>Keyword 1</option>
+                                    <option>Keyword 2</option>
+                                    <option>Keyword 3</option>
+                                    <option>Keyword 4</option>
+                                    <option>Keyword 5</option>
+                                    <option>Keyword 6</option> -->
+                                    </select>
+                                </div>
+                                <!--         <div class="col-md-1">
+          <select style="width: 100%; border-radius: 3px;">
+            <option>Last Position</option>
+            <option>≤10</option>
+            <option>≤30</option>
+            <option>≤50</option>
+            <option>≤70</option>
+            <option>≤100</option>
+          </select>
+        </div> -->
+                                <div class="col-md-1 col-md-offset-7">
+                                    <a class="btn btn-primary btn-sm leadSenseBtn" id="exportBtnAreaInComptetiors" href="#"><i class="fa fa-download"></i> Export to CSV</a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="chart">
+                                        <canvas id="competitorRanksChart" width="510" height="150"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <!-- Main content -->
+                        <section class="content container-fluid sectionBlue">
+                            <div class="row">
+                                <div class="col-md-4 showInLine">
+                                    <span>Add Competitor:</span>
+                                    <input type="text" class="inputTextTransparentBg" id="addCompetitorsData" name="keyword" placeholder="Competitor">
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-sm skyblueRoundedBtn" onclick="addCompetitors();"><i class="fa fa-plus"></i> Add</button>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="alert alert-success alert-dismissible fade in hidden" id="competitorAddNotification">
+                                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                        <p id="competitorAddNotificationContent"><strong>Success!</strong> This alert box could indicate a successful or positive action.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="box-body table-responsive">
+                                        <table id="competitorTable" class="table table-striped">
+                                            <thead>
+                                                <tr id="competitorsTableHeaderRow">
+                                                    <!--   <th>Keyword</th>
+                                                <th>datamintelligence.com</th>
+                                                <th>mordorintelligence.com</th>
+                                                <th>marketsandmarkets.com</th>
+                                                <th>alliedmarketresearch.com</th>
+                                                <th>grandviewresearch.com</th>
+                                                <th>transparencymarketresearch.com</th> -->
+                                                </tr>
+                                            </thead>
+                                            <tbody id="competitorTableBody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <!-- /.col-md-12 -->
+                            </div>
+                            <!-- /.row -->
+                        </section>
+                        <!-- /.content -->
+                    </div>
+                </div>
+                <!-- /.tab -->
+            </div>
+            <!-- /.tab -->
+        </div>
+        {% include 'footer.html' %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-range/2.2.0/moment-range.min.js"></script>
+        <script type="text/javascript">
+        //window['moment-range'].extendMoment(moment);
+
+
+        function showManageKeywordsArea() {
+            //firstly hide the already shown ranking table
+            $("#rankingTableAreaWrapper").hide();
+            
+            //now show a new table
+            $("#manageKeywordsAreaWrapper").show();
+
+            //get the data... ie., all keywords with their groups
+
+        }
+
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function newDate(date) {
+            //return moment().add(days, 'd').toDate();
+
+            return moment().subtract(7, 'day').format("YYYY-MM-DD");
+        }
+
+        function addData(chart, label, data) {
+            chart.data.labels.push(label);
+            chart.data.datasets.forEach((dataset) => {
+                console.log(data);
+                dataset.data.push(data);
+            });
+            chart.update();
+        }
+
+
+        //options for keyword ranks chart
+        var optionsForKeywordRanksCharts = {
+            responsive: true,
+            maintainAspectRatio: true,
+            cubicInterpolationMode: "monotone",
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        reverse: true,
+                    }
+                }]
+            },
+            legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                    fontColor: "#bfbfbf",
+                    fontSize: 14,
+                    usePointStyle: true
+                }
+            }
+        };
+
+        var optionsCompetitorsForChart = {
+            scales: {
+                xAxes: [{ stacked: true }],
+                yAxes: [{
+                    stacked: true,
+                    ticks: {
+                        reverse: true,
+                    }
+                }]
+            },
+            legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                    fontColor: "#bfbfbf",
+                    fontSize: 14,
+                    usePointStyle: true
+                }
+            }
+        }
+
+        //line chart for main keyword ranks with top and worst performers
+        DataForTable1 = [];
+        LabelForTable1 = [];
+
+        //stack area chart for competitors
+        DataForTable2 = [];
+        LabelForTable2 = [];
+
+        //data labels of competitors chart
+
+        DataForTable2Rank1 = [];
+        DataForTable2Rank2 = [];
+        DataForTable2Rank4 = [];
+        DataForTable2Rank6 = [];
+        DataForTable2Rank11 = [];
+        DataForTable2Rank21 = [];
+        DataForTable2Rank31 = [];
+        DataForTable2Rank100 = [];
+
+        //competitors chart colors
+        colorsForCompetitors = ["#56BA4C", "#9ABA4C", "#EBE54C", "#FEE855", "#EFAE2C", "#ea9225", "#e35218", "#d73224"];
+
+        //ranking terminology lables for competitors chart
+        LabelsForTerminology = ["rank1", "rank2-3", "rank4-5", "rank6-10", "rank11-20", "rank21-30", "rank31-100", "rank100+"];
+
+
+        function chartDataPreparerForCompetitors(data, fromDate, toDate) {
+            var _fromDate = fromDate;
+            var _ToDate = toDate;
+            var ReceivedData = data["response"];
+
+            for (var k in ReceivedData) {
+                /*console.log(k);*/ //gives the name i.e label
+                LabelForTable2.push(k);
+
+                //label: 'Rank 1'
+                /* console.log(ReceivedData[k]["rank1"]); //gives the actual data point
+                 console.log(ReceivedData[k]["rank2-3"]);
+                 console.log(ReceivedData[k]["rank4-5"]);
+                 console.log(ReceivedData[k]["rank6-10"]);
+                 console.log(ReceivedData[k]["rank11-20"]);
+                 console.log(ReceivedData[k]["rank21-30"]);
+                 console.log(ReceivedData[k]["rank31-100"]);
+                 console.log(ReceivedData[k]["rank100+"]);*/
+                DataForTable2Rank1.push(ReceivedData[k]["rank1"]);
+                DataForTable2Rank2.push(ReceivedData[k]["rank2-3"]);
+                DataForTable2Rank4.push(ReceivedData[k]["rank4-5"]);
+                DataForTable2Rank6.push(ReceivedData[k]["rank6-10"]);
+                DataForTable2Rank11.push(ReceivedData[k]["rank11-20"]);
+                DataForTable2Rank21.push(ReceivedData[k]["rank21-30"]);
+                DataForTable2Rank31.push(ReceivedData[k]["rank31-100"]);
+                DataForTable2Rank100.push(ReceivedData[k]["rank100+"]);
+
+                //LabelForTable2.push(k);
+            }
+
+            DataForTable2.push(DataForTable2Rank1, DataForTable2Rank2, DataForTable2Rank4, DataForTable2Rank6, DataForTable2Rank11, DataForTable2Rank21, DataForTable2Rank31, DataForTable2Rank100);
+
+            //now print chart
+
+            var competitorsChart = $("#competitorRanksChart");
+
+            var datasetValueForCompetitors = [];
+            for (var j = 0; j < DataForTable2.length; j++) {
+                //var colorForLine = getRandomColor();
+                datasetValueForCompetitors[j] = {
+                    backgroundColor: colorsForCompetitors[j],
+                    label: LabelsForTerminology[j],
+                    data: DataForTable2[j]
+                }
+            }
+
+            var competitorRanksChart = new Chart(competitorsChart, {
+                type: 'bar',
+                data: {
+                    labels: LabelForTable2,
+                    datasets: datasetValueForCompetitors
+                },
+                options: optionsCompetitorsForChart
+            });
+
+        }
+
+        function removeData(chart) {
+            console.log(chart);
+            /*     if (chart.data.labels != undefined) {
+            chart.data.labels.pop();
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.pop();
+            });
+            chart.update();
+        }
+*/
+
+        }
+
+
+        function chartDataPreparerForSpecificKeyword(data, fromDate, toDate) {
+            /*  var _fromDate = fromDate;
+              var _ToDate = toDate;*/
+            window.SpecificKeywordChartData = data;
+            var ReceivedData = data["response"]["competitor_data"];
+            console.log(ReceivedData);
+
+            var labels = data["labels"];
+            console.log(labels);
+
+            for (var k in ReceivedData) {
+                console.log(k);
+                /*DataForTable1.push(top_performer_data[k].points);
+                LabelForTable1.push(k);*/
+
+            }
+
+            /* var _fromDate = '2018-09-14';
+             var _ToDate = '2018-09-18';*/
+
+            var DateLabels = getAllTheDatesInThisDateRange(fromDate, toDate, 'days');
+            //now print chart
+
+            //get this date array
+
+            var ctx = $("#SpecificKeywordChart");
+
+            //clear
+
+            var datasetValueForSpecificKeyword = [];
+            for (var j = 0; j < labels.length; j++) {
+                var tempCompVal = labels[j];
+                var colorForLine = getRandomColor();
+                datasetValueForSpecificKeyword[j] = {
+                    backgroundColor: colorForLine,
+                    borderColor: colorForLine,
+                    fill: false,
+                    radius: 5,
+                    label: labels[j],
+                    data: ReceivedData[tempCompVal],
+                    borderWidth: 0
+                }
+            }
+
+            removeData(ctx);
+
+            chart2 = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: DateLabels,
+                    datasets: datasetValueForSpecificKeyword
+                },
+                options: optionsForKeywordRanksCharts
+            });
+
+
+
+        }
+
+
+
+        function chartDataPreparer(data, fromDate, ToDate) {
+            var _fromDate = fromDate;
+            var _ToDate = ToDate;
+            var ReceivedData = data;
+
+            var top_performer_data = ReceivedData["top_performer"];
+            var worst_performer_data = ReceivedData["worst_performer"];
+
+            for (var k in top_performer_data) {
+                console.log(k);
+                DataForTable1.push(top_performer_data[k].points);
+                LabelForTable1.push(k);
+            }
+
+            /*  for (var l in worst_performer_data) {
+                  console.log(l);
+                  DataForTable1.push(worst_performer_data[l].points);
+                  LabelForTable1.push(l);
+              }*/
+
+
+            //now print chart
+
+            var ctx = $("#keywordRanksChart");
+
+            var datasetValue = [];
+            for (var j = 0; j < DataForTable1.length; j++) {
+                var colorForLine = getRandomColor();
+                datasetValue[j] = {
+                    backgroundColor: colorForLine,
+                    borderColor: colorForLine,
+                    fill: false,
+                    radius: 5,
+                    label: LabelForTable1[j],
+                    data: DataForTable1[j],
+                    borderWidth: 0
+                }
+            }
+
+            console.log("done preparing data for chart!");
+            console.log(datasetValue);
+
+            if (_fromDate != "" && _ToDate != "") {
+                //get the dates
+                var DateLabels = getAllTheDatesInThisDateRange(_fromDate, _ToDate, 'days');
+                //create Chart class object
+                chart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: DateLabels,
+                        datasets: datasetValue
+                    },
+                    options: optionsForKeywordRanksCharts
+                });
+
+
+            }
+        }
+
+        $('#rankingTable tbody').on('click', 'a', function() {
+            console.log("selected a specific keyword");
+            console.log($(this).text());
+            console.log($(this)[0].hash);
+            var title = $(this).text();
+            var capturedKeyword = $(this)[0].hash;
+            capturedKeyword = capturedKeyword.replace("#", "");
+
+            $("#SpecficKeywordChart").modal('show');
+            $("#SpecificKeywordTitle").text(title);
+
+            //load the data for chart
+            //send with a keyword id
+            loadSpecificKeywordChart(capturedKeyword);
+
+
+
+        });
+
+        function getAllTheDatesInThisDateRange(from, to, type) {
+            var outputArr = [];
+            if (from != "" && to != "") {
+                var fromDate = from;
+                var toDate = to;
+                //console.log("in getAllTheDatesInThisDateRange");
+                console.log(fromDate);
+                console.log(toDate);
+
+                var range = moment().range(fromDate, toDate);
+                if (type != "") {
+                    var diff = range.diff(type);
+                    var array = range.toArray(type);
+                } else {
+                    var diff = range.diff('days');
+                    var array = range.toArray('days');
+                }
+
+                $.each(array, function(i, e) {
+                    outputArr.push(moment(e).format("YYYY-MM-DD"));
+
+                });
+
+                //console.log('Range', range);
+                //console.log('diff', diff);
+
+                return outputArr;
+            }
+        }
+
+        function getChartDataFromRemoteServer(fromDate, ToDate) {
+
+            if (fromDate != "" && ToDate != "") {
+                //load from the API
+                //var urlToLoad = "http://localhost:8001/keywordrankschart/"+fromDate+"/"+ToDate;
+                var urlToLoad = "http://api.jsonbin.io/b/5b8930773ffac56f4bd783ae";
+                console.log("loading keywordRanksChart for: " + urlToLoad);
+                $.ajax({
+                    url: urlToLoad,
+                    type: "GET",
+                    success: function(data) {
+                        console.log(data);
+                        console.log("got data, now preparing chart!");
+                        chartDataPreparer(data, fromDate, ToDate);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            }
+
+        }
+
+        function loadCompetitorsChart(yesterday) {
+
+            /*        var urlToLoad = "http://167.99.159.221/kwrd-tool/client-competitor-keyword-position-graph";
+
+                    $.ajax({
+                        url: urlToLoad,
+                        type: "POST",
+                        success: function(data) {
+                            console.log(data);
+                            console.log("got data for competitors, now preparing chart!");
+                            chartDataPreparerForCompetitors(data);
+                        },
+                        error: function(error) {
+                            console.log(error);
+                        }
+                    });
+            */
+
+            var previousDayDate = "2018-09-15";
+
+            var dataForLoadingCompetitorsChart = {
+                "keyword_tool_id": window.localStorage.keyword_tool_id,
+                "date": yesterday
+            };
+
+            dataForLoadingCompetitorsChart = JSON.stringify(dataForLoadingCompetitorsChart);
+
+            var urlForLoadingCompetitorsChart = "http://167.99.159.221/kwrd-tool/client-competitor-keyword-position-graph";
+
+            $.ajax({
+                type: "POST",
+                url: urlForLoadingCompetitorsChart,
+                contentType: "application/json; charset=utf-8",
+                data: dataForLoadingCompetitorsChart,
+                success: function(data) {
+                    console.log(data);
+                    if (data.status == 0) {
+                        //error     
+                        console.log("error loading competitors chart data");
+                    } else if (data.status == 1) {
+                        //success
+                        console.log("success loading competitors chart data");
+                        //loadTableRanks(data, startDate, endDate);
+                        chartDataPreparerForCompetitors(data);
+
+                    }
+                },
+                error: function(jqXHR, error, errorThrown) {
+                    if (jqXHR.status && jqXHR.status == 400) {
+                        console.log(jQuery.parseJSON(jqXHR.responseText));
+                    } else {
+                        console.log(jQuery.parseJSON(jqXHR.responseText));
+                        console.log("Something went wrong");
+                    }
+                }
+            });
+        }
+
+
+        function loadSpecificKeywordChart(capturedKeyword) {
+            /*   var urlToLoad = "http://167.99.159.221/kwrd-too/client-specific-kwrd-graph";
+
+               $.ajax({
+                   url: urlToLoad,
+                   type: "GET",
+                   success: function(data) {
+                       console.log(data);
+                       console.log("got data for specific keyword, now preparing chart!");
+                       chartDataPreparerForSpecificKeyword(data);
+                   },
+                   error: function(error) {
+                       console.log(error);
+                   }
+               });*/
+
+            //var previousDayDate = "2018-09-15";
+
+            var dataForLoadingSpecificKeyword = {
+                "keyword_tool_id": window.localStorage.keyword_tool_id,
+                "keyword_id": capturedKeyword,
+                "from_date": window.globalFromDate,
+                "to_date": window.globalToDate
+            };
+
+
+            dataForLoadingSpecificKeyword = JSON.stringify(dataForLoadingSpecificKeyword);
+
+            var urlForLoadingSpecificKeyword = "http://167.99.159.221/kwrd-tool/client-specific-kwrd-graph";
+
+            $.ajax({
+                type: "POST",
+                url: urlForLoadingSpecificKeyword,
+                contentType: "application/json; charset=utf-8",
+                data: dataForLoadingSpecificKeyword,
+                success: function(data) {
+                    console.log(data);
+                    if (data.status == 0) {
+                        //error     
+                        console.log("error loading competitors chart data");
+                    } else if (data.status == 1) {
+                        //success
+                        console.log("success loading competitors chart data");
+                        //loadTableRanks(data, startDate, endDate);
+                        chartDataPreparerForSpecificKeyword(data, window.globalFromDate, window.globalToDate);
+                    }
+                },
+                error: function(jqXHR, error, errorThrown) {
+                    if (jqXHR.status && jqXHR.status == 400) {
+                        console.log(jQuery.parseJSON(jqXHR.responseText));
+                    } else {
+                        console.log(jQuery.parseJSON(jqXHR.responseText));
+                        console.log("Something went wrong");
+                    }
+                }
+            });
+        }
+
+        $(function() {
+
+
+
+
+
+
+        });
+        </script>
+        <script src="{{ url_for('static', filename='jquery.csv.js') }}"></script>
+        <script>
+        var globalKeywordsAndGroups = [];
+        var table;
+        var firebaseRequestsCounter = 0;
+
+        function loadDataForASingleKeyword(input) {
+            var keyword = input;
+            console.log("selected keyword is: " + keyword);
+
+            if (keyword != "" || keyword != undefined) {
+                //make ajax call to get data
+
+                var dataForLoadingASingleKeyword = {
+                    "keyword_tool_id": window.localStorage.keyword_tool_id,
+                    "keyword_id": keyword,
+                    "from_date": window.globalFromDate,
+                    "to_date": window.globalToDate
+                };
+
+                dataForLoadingASingleKeyword = JSON.stringify(dataForLoadingASingleKeyword);
+
+                var urlForLoadingASingleKeyword = "http://167.99.159.221/kwrd-tool/specific-keyword-table-graph";
+
+                $.ajax({
+                    type: "POST",
+                    url: urlForLoadingASingleKeyword,
+                    contentType: "application/json; charset=utf-8",
+                    data: dataForLoadingASingleKeyword,
+                    success: function(data) {
+                        console.log(data);
+                        if (data.status == 0) {
+                            //error     
+                            console.log("error loading ASingleKeyword data");
+                        } else if (data.status == 1) {
+                            //success
+                            console.log("success loading ASingleKeyword data");
+                            //loadTableRanks(data, window.globalFromDate, window.globalToDate, true);
+                            //loadTableRanksForSingleKeyword();
+
+                        }
+                    },
+                    error: function(jqXHR, error, errorThrown) {
+                        if (jqXHR.status && jqXHR.status == 400) {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                        } else {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                            console.log("Something went wrong");
+                        }
+                    }
+                });
+            }
+
+
+        }
+
+
+
+        function removeSpecialCharacters(input) {
+            var textToSanitize = input.value;
+            console.log(textToSanitize);
+            var SanitizedText = textToSanitize.replace(/[^a-zA-Z0-9 ]/g, "");
+            $(input).val(SanitizedText);
+
+        }
+
+        function keywordsDate(selectObject) {
+            var keywordsPeriod = selectObject.value;
+            console.log("selected date in kwtool is: " + keywordsPeriod);
+
+            var currentDate = moment().subtract(1, 'day').format("YYYY-MM-DD");
+
+            window.globalFromDate = keywordsPeriod;
+            window.globalToDate = currentDate;
+
+            if (keywordsPeriod != "") {
+                //loadKeywordRanksFromFirebase(keywordsPeriod, false);
+                loadDataForKeywordRanks(keywordsPeriod, currentDate)
+
+            }
+
+        }
+
+
+
+        function AddOptionsInkeywordsSelector() {
+            //loading keywords in keywords selector
+
+            //make ajax call
+            var dataForLoadingAllKeywordsAndGroups = {
+                "keyword_tool_id": window.localStorage.keyword_tool_id
+            };
+
+            dataForLoadingAllKeywordsAndGroups = JSON.stringify(dataForLoadingAllKeywordsAndGroups);
+
+            var urlForLoadingAllKeywordsAndGroups = "http://167.99.159.221/kwrd-tool/dashboard-group-kwrd-list";
+
+            $.ajax({
+                type: "POST",
+                url: urlForLoadingAllKeywordsAndGroups,
+                contentType: "application/json; charset=utf-8",
+                data: dataForLoadingAllKeywordsAndGroups,
+                success: function(data) {
+                    console.log(data);
+                    if (data.status == 0) {
+                        //error     
+                        console.log("error loading AllKeywordsAndGroups");
+                    } else if (data.status == 1) {
+                        //success
+                        console.log("success loading AllKeywordsAndGroups");
+                        var AllKeywordsAndGroups = data.response.groups;
+                        var keywordsSelectorData = "";
+                        var countkeywords = 0;
+
+                        for (var group in AllKeywordsAndGroups) {
+                            //console.log(group);
+                            //console.log(AllKeywordsAndGroups[group]["group_name"]);
+                            /*   for (var keyword in AllKeywordsAndGroups[group]["keywords"]){
+                                   console.log(AllKeywordsAndGroups[group]["keywords"][keyword]);
+                               }*/
+
+
+
+                            keywordsSelectorData += '<optgroup label="' + AllKeywordsAndGroups[group]["group_name"] + '" value="' + group + '">';
+
+                            var justAllKeywords = AllKeywordsAndGroups[group]["keywords"];
+
+                           
+                            for (var z = 0; z < justAllKeywords.length; z++) {
+                                //console.log(justAllKeywords[z]);
+
+                                for (var keyword in justAllKeywords[z]) {
+                                    //console.log(keyword);
+                                    //console.log(justAllKeywords[z][keyword]);
+                                    countkeywords++;
+
+                                    keywordsSelectorData += '<option value="' + keyword + '">' + justAllKeywords[z][keyword] + '</option>';
+
+                                    //push to global keywords and groups array
+                                    var tempHelperForGlobalKeywordsAndGroupsArray = {
+                                        "group_id": group,
+                                        "group_name": AllKeywordsAndGroups[group]["group_name"],
+                                        "keyword_id": keyword,
+                                        "keyword_name": justAllKeywords[z][keyword],
+                                        "sno": countkeywords
+                                    };
+
+                                    globalKeywordsAndGroups.push(tempHelperForGlobalKeywordsAndGroupsArray);
+                                }
+                            }
+
+                            keywordsSelectorData += '</optgroup>';
+
+                        }
+
+                        //console.log(keywordsSelectorData);
+
+                        /*for (var i = 0; i < previousDayDataHolder.length; i++) {
+                            console.log(previousDayDataHolder[i].keyword);
+                            keywordsSelectorData += '<option value="' + previousDayDataHolder[i].keyword + '">' + previousDayDataHolder[i].keyword + '</option>';
+                        }*/
+
+                        $("#keywordsSelector").append(keywordsSelectorData);
+                        $("#competitorsKeywordsSelector").append(keywordsSelectorData);
+
+                        //now load the table for managing keywords and groups
+
+                        loadTableManageKeywordsAndGroups();
+
+
+                    }
+                },
+                error: function(jqXHR, error, errorThrown) {
+                    if (jqXHR.status && jqXHR.status == 400) {
+                        console.log(jQuery.parseJSON(jqXHR.responseText));
+                    } else {
+                        console.log(jQuery.parseJSON(jqXHR.responseText));
+                        console.log("Something went wrong");
+                    }
+                }
+            });
+
+
+        }
+
+        function getDatesFromPicker() {
+            //clear the yesterday data;
+            //yesterdayData = {};
+            console.log("clicked apply button");
+            console.log($('.dr1.from').val());
+            console.log($('.dr1.to').val());
+            console.log($('.dr2.from').val());
+            console.log($('.dr2.to').val());
+
+            var dr1_from = $('.dr1.from').val();
+            var dr1_to = $('.dr1.to').val();
+            var dr2_from = $('.dr2.from').val();
+            var dr2_to = $('.dr2.to').val();
+            //check if the values are not empty or undefined
+            if (dr1_from != "" && dr1_to != "" && ($(".enable-comparison").is(":checked") == false)) {
+                dr1_from = moment(dr1_from, "DD-MM-YYYY").format("YYYY-MM-DD");
+                dr1_to = moment(dr1_to, "DD-MM-YYYY").format("YYYY-MM-DD");
+                console.log(dr1_from);
+                console.log(dr1_to);
+
+                //now we got the date.. query in the firebase with this date
+                loadKeywordRanksFromFirebase(dr1_from, false);
+                //var urlTemp = "http://flask-env.xknkdkh3pw.ap-south-1.elasticbeanstalk.com/data/date-range/"+dr1_from+"/"+dr1_to;
+                //getData(urlTemp);
+                //loadTableSingle(urlTemp);
+            } else {
+                console.log("dr1 from and dr1 to empty or checkbox is not checked");
+            }
+
+            if (dr2_from != "" && dr2_to != "" && ($(".enable-comparison").is(":checked") == true)) {
+                dr1_from = moment(dr1_from, "DD-MM-YYYY").format("YYYY-MM-DD");
+                dr1_to = moment(dr1_to, "DD-MM-YYYY").format("YYYY-MM-DD");
+
+                dr2_from = moment(dr2_from, "DD-MM-YYYY").format("YYYY-MM-DD");
+                dr2_to = moment(dr2_to, "DD-MM-YYYY").format("YYYY-MM-DD");
+
+                console.log(dr2_from);
+                console.log(dr2_to);
+
+                //load data for dr1
+                //var urlTemp = "http://flask-env.xknkdkh3pw.ap-south-1.elasticbeanstalk.com/data/date-range/"+dr1_from+"/"+dr1_to;
+
+                //loadYesterdayData(dr2_from,dr2_to,false,urlTemp);
+                //getData(urlTemp);
+
+                //do the comparision work now
+
+
+            } else {
+
+            }
+
+        }
+
+
+        $oldJquery(document).ready(function() {
+
+
+            $oldJquery('.pickerContainer.widget').DateRangesWidget();
+            //$oldJquery('.pickerContainer.widget').DatePickerSetDate(todayDate());
+
+            /*prettyPrint(); date: [moment(), moment()]*/
+        });
+
+
+
+        function addDomainInDB() {
+            //get the domain name from the input
+            var domainNameToInput = $("#domainNameToInput").val();
+            var dataToBeSentForDomainNameAdding = {
+                "manager_account_id": window.localStorage.manager_account_id,
+                "client_domain": domainNameToInput
+            }
+
+            dataToBeSentForDomainNameAdding = JSON.stringify(dataToBeSentForDomainNameAdding);
+
+            if (domainNameToInput != "") {
+                var urlForAddingDomain = "http://167.99.159.221/keyword-tool-user-signup"
+                $.ajax({
+                    url: urlForAddingDomain,
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    data: dataToBeSentForDomainNameAdding,
+                    success: function(data) {
+                        console.log(data);
+                        if (data.status == 0 || data.keyword_tool_id == null) {
+                            //error
+                            console.log(data.error);
+                        } else if (data.status == 1) {
+                            //success
+                            console.log(data.keyword_tool_id);
+                            window.localStorage.keyword_tool_id = data.keyword_tool_id;
+                        }
+                    },
+                    error: function(jqXHR, error, errorThrown) {
+                        if (jqXHR.status && jqXHR.status == 400) {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                        } else {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                            console.log("Something went wrong");
+                        }
+                    }
+                });
+            }
+
+
+        }
+
+        $(document).ready(function() {
+
+            //intiate loader
+            $("#loader").css("display", "block");
+
+            //hide the manage keywords table
+            $("#manageKeywordsAreaWrapper").hide();
+
+            //preparing dates - auto dates for the date selector
+
+            var keywordsDateSelectorData = "";
+
+            var datesArr = ["One Week", "Two Weeks", "One Month", "Three Months", "Six Months", "One year", "Two Years"];
+
+            var datesDict = [];
+
+            var one_week = moment().subtract(7, 'day').format("YYYY-MM-DD");
+            var two_weeks = moment().subtract(14, 'day').format("YYYY-MM-DD");
+            var one_month = moment().subtract(30, 'day').format("YYYY-MM-DD");
+            var three_months = moment().subtract(90, 'day').format("YYYY-MM-DD");
+            var six_months = moment().subtract(180, 'day').format("YYYY-MM-DD");
+            var one_year = moment().subtract(365, 'day').format("YYYY-MM-DD");
+            var two_years = moment().subtract(730, 'day').format("YYYY-MM-DD");
+
+            datesDict.push(one_week, two_weeks, one_month, three_months, six_months, one_year, two_years);
+
+            for (var i = 0; i < 7; i++) {
+                keywordsDateSelectorData += '<option value="' + datesDict[i] + '">' + datesArr[i] + '</option>';
+            }
+
+            $("#keywordsDateSelector").append(keywordsDateSelectorData);
+
+            //check if the manager_account_id exists
+            if (window.localStorage.manager_account_id) {
+                //exists
+                var dataForKeywordChecking = {
+                    "manager_account_id": window.localStorage.manager_account_id
+                }
+
+                dataForKeywordChecking = JSON.stringify(dataForKeywordChecking);
+
+                var urlForCheckingKeywordRankingTool = "http://167.99.159.221/keyword-tool-user-status";
+
+                $.ajax({
+                    type: "POST",
+                    url: urlForCheckingKeywordRankingTool,
+                    contentType: "application/json; charset=utf-8",
+                    data: dataForKeywordChecking,
+                    success: function(data) {
+                        console.log(data);
+                        if (data.status == 0) {
+                            //show the UI to add a domain      
+                            $("#addDomain").show();
+                            $("#actualUIForKeywordRankingTool").hide();
+                        } else if (data.status == 1) {
+                            //show the actual UI
+                            $("#addDomain").hide();
+                            $("#actualUIForKeywordRankingTool").show();
+                            console.log("on load got keyword_tool_id!");
+                            window.localStorage.keyword_tool_id = data.keyword_tool_id;
+
+
+                            var startDate = moment().subtract(6, 'day').format("YYYY-MM-DD");
+                            var endDate = moment().subtract(1, 'day').format("YYYY-MM-DD");
+
+                            window.globalFromDate = startDate;
+                            window.globalToDate = endDate;
+
+                            loadDataForKeywordRanks(startDate, endDate);
+                            loadDataForCompetitors(startDate, endDate);
+                            AddOptionsInkeywordsSelector();
+
+                        }
+                    },
+                    error: function(jqXHR, error, errorThrown) {
+                        if (jqXHR.status && jqXHR.status == 400) {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                        } else {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                            console.log("Something went wrong");
+                        }
+                    }
+                });
+            } else {
+                //not exists
+
+            }
+
+
+
+        });
+
+
+        function loadDataForKeywordRanks(startDate, endDate) {
+
+            //get data for ranking table from DB
+            /* var yesterdayDate = moment().subtract(1, 'day').format("YYYY-MM-DD");
+             var previousDayDate = moment().subtract(6, 'day').format("YYYY-MM-DD");*/
+
+            //check if startDate and endDate is not empty
+            console.log("startDate:" + startDate);
+            console.log("endDate:" + endDate);
+
+            if (startDate != "" && endDate != "") {
+                var dataForLoadingRanksTable = {
+                    "keyword_tool_id": window.localStorage.keyword_tool_id,
+                    "start_date": startDate,
+                    "end_date": endDate,
+                    "keyword_position_constraint": 101
+                };
+
+                dataForLoadingRanksTable = JSON.stringify(dataForLoadingRanksTable);
+
+                var urlForLoadingRanksTable = "http://167.99.159.221/client-keyword-position-table";
+
+                $.ajax({
+                    type: "POST",
+                    url: urlForLoadingRanksTable,
+                    contentType: "application/json; charset=utf-8",
+                    data: dataForLoadingRanksTable,
+                    dataType: "text json",
+                    success: function(data) {
+                        console.log(data);
+                        if (data.status == 0) {
+                            //error     
+                            console.log("error loading keyword ranks table data");
+                            alert("No data Available for this date range!");
+                        } else if (data.status == 1) {
+                            //success
+                            console.log("success loading keyword ranks table data");
+                            loadTableRanks(data, startDate, endDate);
+
+                        }
+                    },
+                    error: function(jqXHR, error, errorThrown) {
+
+                        if (jqXHR.status && jqXHR.status == 500) {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                        } else {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                            console.log("Something went wrong while loading keyword ranks table data");
+                        }
+                    }
+                });
+            }
+
+            /*var yesterdayDate = "2018-09-20";
+            var previousDayDate = "2018-09-14";*/
+
+        }
+
+        function loadDataForCompetitors(startDate, endDate) {
+
+            //get data for ranking table from DB
+            /* var yesterdayDate = moment().subtract(1, 'day').format("YYYY-MM-DD");
+             var previousDayDate = moment().subtract(6, 'day').format("YYYY-MM-DD");*/
+
+            //check if startDate and endDate is not empty
+
+            //if(startDate!=""&&endDate!="")
+
+            var yesterdayDate = "2018-09-20";
+            var previousDayDate = "2018-09-14";
+
+            var dataForLoadingCompetitorsTable = {
+                "keyword_tool_id": window.localStorage.keyword_tool_id,
+                "from_date": previousDayDate,
+                "to_date": yesterdayDate
+            };
+
+            dataForLoadingCompetitorsTable = JSON.stringify(dataForLoadingCompetitorsTable);
+
+            var urlForLoadingCompetitorsTable = "http://167.99.159.221/kwrd-tool/client-competitor-keyword-position-table";
+
+            $.ajax({
+                type: "POST",
+                url: urlForLoadingCompetitorsTable,
+                contentType: "application/json; charset=utf-8",
+                data: dataForLoadingCompetitorsTable,
+                success: function(data) {
+                    console.log(data);
+                    if (data.status == 0) {
+                        //error     
+                        console.log("error loading competitors table data");
+                    } else if (data.status == 1) {
+                        //success
+                        console.log("success loading competitors table data");
+
+                        var tableHeaders = "";
+                        $.each(data.column, function(i, val) {
+                            tableHeaders += "<th>" + val + "</th>";
+                        });
+
+                        //console.log("tableHeaders:");
+                        //console.log(tableHeaders);
+
+                        $("#competitorsTableHeaderRow").html(tableHeaders);
+
+                        loadTableCompetitor(data, startDate, endDate);
+
+                        var yesterday = moment().subtract(1, 'day').format("YYYY-MM-DD");
+                        //load the competitors chart
+                        loadCompetitorsChart(yesterday);
+
+                    }
+                },
+                error: function(jqXHR, error, errorThrown) {
+                    if (jqXHR.status && jqXHR.status == 400) {
+                        console.log(jQuery.parseJSON(jqXHR.responseText));
+                    } else {
+                        console.log(jQuery.parseJSON(jqXHR.responseText));
+                        console.log("Something went wrong");
+                    }
+                }
+            });
+        }
+
+        function reloadTable() {
+            console.log("Reloading Table...");
+            table.ajax.reload(null, false); // user paging is not reset on reload
+        }
+
+        function addReloadButton() {
+            $('<button id="refresh" class="btn btn-primary btn-sm" onclick="reloadTable();">Refresh</button>').appendTo('div.dataTables_filter');
+        }
+
+
+        function deleteKeywords(dataForDeletingKeywords) {
+            if (dataForDeletingKeywords != "") {
+                var urlForDeletingKeywords = "http://167.99.159.221/kwrd-tool/delete-seleted-keyword";
+
+                $.ajax({
+                    type: "POST",
+                    url: urlForDeletingKeywords,
+                    contentType: "application/json; charset=utf-8",
+                    data: dataForDeletingKeywords,
+                    success: function(data) {
+                        console.log(data);
+                        if (data.status == 0) {
+                            //error     
+                            console.log("error Deleting Keywords");
+                            alert("error Deleting Keywords");
+                        } else if (data.status == 1) {
+                            //success
+                            console.log("success Deleting Keywords");
+                            alert("success Deleting Keywords");
+                            window.location.reload();
+                            //can either show a pop up or reload the page!
+                        }
+                    },
+                    error: function(jqXHR, error, errorThrown) {
+                        alert("error Deleting Keywords");
+                        if (jqXHR.status && jqXHR.status == 400) {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                        } else {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                            console.log("Something went wrong");
+                        }
+                    }
+                });
+            }
+        }
+
+        function applyBatchAction(selectedAction, isManageTable) {
+            if (selectedAction != "" || selectedAction != "none" || selectedAction != undefined) {
+                //now perform the action
+                console.log(selectedAction);
+
+                if (selectedAction == "delete") {
+                    //delete action
+                    console.log("delete action selected");
+
+                    //now prepare the payload data!
+
+                    var keywordsToBeDeleted = [];
+                    if(isManageTable == true){
+                        var rows_selected = managetable.column(0).checkboxes.selected();
+                    }else{
+                        var rows_selected = table.column(0).checkboxes.selected();
+                    }
+                    
+
+                    // Iterate over all selected checkboxes
+                    $.each(rows_selected, function(index, rowId) {
+
+                        console.log(rowId);
+                        keywordsToBeDeleted.push(rowId);
+
+                    });
+
+
+                    //send data now
+
+                    var dataForDeletingKeywords = {
+                        "keyword_id_list": keywordsToBeDeleted
+                    };
+
+                    console.log(dataForDeletingKeywords);
+
+                    //data ready, now  show a confirmation popup
+
+                    //$("#deleteConfirmKeywords").text();
+
+                    //$("#deleteConfirmKeywordsPopup").modal('show');
+
+                    dataForDeletingKeywords = JSON.stringify(dataForDeletingKeywords);
+
+                    if (confirm("Are you sure to delete this keywords?")) {
+                        deleteKeywords(dataForDeletingKeywords);
+                    }
+
+
+
+
+                }
+            }
+        }
+
+        function addSelectorForMultipleActionsOnKeywords() {
+            $('<select onchange="applyBatchAction(this.value, false);"><option value="none">--Bulk Action--</option><option value="delete">Delete</option><option value="assign">Assign to group</option></select>').appendTo('div.dataTables_filter');
+        }
+
+         function addSelectorForMultipleActionsOnKeywordsInManageTable() {
+            $('<select onchange="applyBatchAction(this.value, true);"><option value="none">--Bulk Action--</option><option value="delete">Delete</option><option value="assign">Assign to group</option></select>').appendTo('div.dataTables_filter');
+        }
+
+
+        function loadKeywordRanksFromFirebase(date, isYesterday) {
+
+            if (date != "") {
+                //var yesterdayDate = date;
+                var yesterdayDate = moment().subtract(1, 'day').format("YYYY-MM-DD");
+                var FirebaseQuery = "Keyword_Ranks/" + yesterdayDate + "/datamintelligence";
+                console.log("Loading Ref:" + FirebaseQuery + " for keywords Rank Table")
+                var starCountRef = firebase.database().ref(FirebaseQuery);
+                starCountRef.on('value', function(snapshot) {
+                    if (snapshot.val() != null) {
+                        var dataSet = snapshot.val();
+                        console.log("Loaded Data for Ref:" + FirebaseQuery);
+                        console.log(dataSet);
+                        if (firebaseRequestsCounter > 1) {
+                            table.destroy();
+                        }
+                        firebaseRequestsCounter++;
+                        console.log(firebaseRequestsCounter);
+
+                        //now load previousDayData too
+                        //need to subtract 
+                        if (isYesterday == true) {
+                            var previousDayDate = moment().subtract(6, 'day').format("YYYY-MM-DD");
+                        } else {
+                            var previousDayDate = date;
+                        }
+
+                        var FirebaseQueryForPreviousDay = "Keyword_Ranks/" + previousDayDate + "/datamintelligence/kv_data";
+                        console.log("Loading Ref:" + FirebaseQueryForPreviousDay + " for key value based data of " + previousDayDate);
+
+                        var starCountRef3 = firebase.database().ref(FirebaseQueryForPreviousDay);
+                        starCountRef3.on('value', function(snapshot) {
+                            if (snapshot.val() != null) {
+                                var previousDayData = snapshot.val();
+                                console.log("Loaded Data for Ref:" + FirebaseQueryForPreviousDay);
+                                console.log(previousDayData);
+                                loadTableRanks(dataSet, previousDayData);
+                            }
+                        });
+                    } else {
+                        alert("No data Available for this date!");
+                    }
+
+                });
+            }
+
+        }
+
+
+        function loadTableManageKeywordsAndGroups(){
+
+               //AddOptionsInkeywordsSelector(); 
+               
+               var newData = globalKeywordsAndGroups;
+
+            managetable = $('#manageKeywordsTable').DataTable({
+                "pageLength": 25,
+                "processing": true,
+                "destroy": true,
+                "data": newData,
+                "columnDefs": [{
+                    "targets": [0],
+                    'checkboxes': {
+                        'selectRow': true
+                    }
+                }],
+                'select': {
+                    'style': 'multi'
+                },
+                'order': [
+                    [1, 'asc']
+                ],
+
+                "columns": [
+
+                    {
+                        "data": "keyword_id"
+                    },
+                    {
+                        "data": "keyword_name"
+                    },
+                    {
+                        "data": "group_name"
+                    },
+       
+
+                ],
+
+                initComplete: function() {
+  
+
+                    //hide the loader
+                    $("#loader").css("display", "none");
+                    console.log("success loading table for managing keywords and groups");
+            
+                    addSelectorForMultipleActionsOnKeywordsInManageTable();
+
+                }
+            });
+        }
+
+
+
+        function loadTableRanks(data, fromDateForChart, toDateForChart, updateChart) {
+            //console.log(data);
+            window.previousDayDataHolder = data["data"];
+            //call the function to fill data in keywords selection box
+            console.log("now loading table!");
+            //AddOptionsInkeywordsSelector();
+
+            var newData = data["data"];
+
+            /*var newDataWithIDs = newData;
+        var i = 1;
+        var modifiedArr = newDataWithIDs.map(function(v) {
+            v.sid = i++;
+            return v;
+        });
+
+        var dataArray = { "data": modifiedArr };
+        console.log(dataArray);
+
+        console.log("modifiedArr is");
+        console.log(modifiedArr);
+*/
+            var currentKeyword;
+
+            table = $('#rankingTable').DataTable({
+                "pageLength": 25,
+                "dom": 'lBfrtip',
+                "buttons": [
+                    'excelHtml5',
+                    'csvHtml5'
+                ],
+                "processing": true,
+                "destroy": true,
+                "data": newData,
+                "columnDefs": [{
+                    "targets": [0],
+                    'checkboxes': {
+                        'selectRow': true
+                    }
+                }],
+                'select': {
+                    'style': 'multi'
+                },
+                'order': [
+                    [1, 'asc']
+                ],
+
+                "columns": [
+
+                    {
+                        "data": "keyword_id"
+                    },
+                    {
+                        "data": "keyword",
+                        "render": function(data, type, row, meta) {
+                            if (type === 'display') {
+                                currentKeyword = data;
+                                //console.log("currentKeyword is :" + currentKeyword);
+                                //now keep this keyword surrounded in a span
+                                //data = data.replace(/ /g, '');
+                                //data = "<a href='#" + data.replace(/ /g, '') + "'>" + data + "</a>";
+                                data = "<a href='#" + row["keyword_id"] + "'>" + data + "</a>";
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "position",
+                        "render": function(data, type, row, meta) {
+                            data = data + '';
+                            return data;
+                        }
+                    },
+
+                    {
+                        "data": "change",
+                        'sType': 'num-html',
+                        "render": function(data, type, row, meta) {
+
+                            if (data > 0) {
+                                data = "<span class='PositiveChangeInPosition'>" + data + "</span>";
+                            } else if (data < 0) {
+                                data = "<span class='NegativeChangeInPosition'>" + data + "</span>";
+                            } else {
+                                data = "<span class='NoChangeInPosition'>" + data + "</span>";
+                            }
+
+                            return data;
+                        }
+                    },
+
+                    {
+                        "data": "url"
+                    }
+
+                ],
+
+                initComplete: function() {
+                    var $buttons = $('.dt-buttons').hide();
+
+                    //hide the loader
+                    $("#loader").css("display", "none");
+                    $("#exportBtnArea").on("click", function() {
+                        var btnClass = '.buttons-' + 'csv';
+                        $buttons.find(btnClass).click();
+                    });
+
+                    var yesterdayDate = "2018-09-20";
+                    var previousDayDate = "2018-09-14";
+
+                    if (updateChart == false) {
+                        //dont load chart 
+                    } else if (fromDateForChart != "" && toDateForChart != "") {
+                        chartDataPreparer(data, fromDateForChart, toDateForChart);
+                    }
+
+
+                    addReloadButton();
+                    addSelectorForMultipleActionsOnKeywords();
+
+                }
+            });
+        }
+
+
+        function loadTableCompetitor(data) {
+            var actualData = data["data"];
+
+            $.fn.dataTable.ext.errMode = 'none';
+
+            $('#competitorTable')
+
+                .on('error.dt', function(e, settings, techNote, message) {
+                    console.log('An error has been reported by Competitors Table: ', message);
+                })
+
+
+                .DataTable({
+                    "pageLength": 25,
+                    "dom": 'lBfrtip',
+                    "buttons": [
+                        'excelHtml5',
+                        'csvHtml5',
+
+                    ],
+                    "processing": true,
+                    "data": actualData,
+                    "columns": [
+                        { "data": "keyword_name" },
+                        {
+                            "data": "client_domain.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                //console.log(data);
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_1.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_2.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_3.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_4.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_5.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_6.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_7.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_8.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        }
+
+                    ],
+                    initComplete: function() {
+                        var $buttons = $('.dt-buttons').hide();
+
+                        $("#exportBtnAreaInComptetiors").on("click", function() {
+                            var btnClass = '.buttons-' + 'csv';
+                            $buttons.find(btnClass).click();
+                        });
+                    }
+                });
+        }
+
+        function loadTableRanksForSingleKeyword(data, fromDateForChart, toDateForChart, updateChart) {
+            //console.log(data);
+            //window.previousDayDataHolder = data["data"];
+            //call the function to fill data in keywords selection box
+            console.log("now loading table for single keyword!");
+            //AddOptionsInkeywordsSelector();
+
+            var newData = data["response"];
+
+            var tempArrForHoldingThisSingleObjectJsonData = [];
+            tempArrForHoldingThisSingleObjectJsonData.push();
+            /*var newDataWithIDs = newData;
+        var i = 1;
+        var modifiedArr = newDataWithIDs.map(function(v) {
+            v.sid = i++;
+            return v;
+        });
+
+        var dataArray = { "data": modifiedArr };
+        console.log(dataArray);
+
+        console.log("modifiedArr is");
+        console.log(modifiedArr);
+*/
+            var currentKeyword;
+
+            table = $('#rankingTable').DataTable({
+                "pageLength": 25,
+                "dom": 'lBfrtip',
+                "buttons": [
+                    'excelHtml5',
+                    'csvHtml5'
+                ],
+                "processing": true,
+                "destroy": true,
+                "data": newData,
+
+
+                "columns": [
+
+                    {
+                        "data": "keyword_id"
+                    },
+                    {
+                        "data": "keyword",
+                        "render": function(data, type, row, meta) {
+                            if (type === 'display') {
+                                currentKeyword = data;
+                                //console.log("currentKeyword is :" + currentKeyword);
+                                //now keep this keyword surrounded in a span
+                                //data = data.replace(/ /g, '');
+                                //data = "<a href='#" + data.replace(/ /g, '') + "'>" + data + "</a>";
+                                data = "<a href='#" + row["keyword_id"] + "'>" + data + "</a>";
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "position",
+                        "render": function(data, type, row, meta) {
+                            data = data + '';
+                            return data;
+                        }
+                    },
+
+                    {
+                        "data": "change",
+                        'sType': 'num-html',
+                        "render": function(data, type, row, meta) {
+
+                            if (data > 0) {
+                                data = "<span class='PositiveChangeInPosition'>" + data + "</span>";
+                            } else if (data < 0) {
+                                data = "<span class='NegativeChangeInPosition'>" + data + "</span>";
+                            } else {
+                                data = "<span class='NoChangeInPosition'>" + data + "</span>";
+                            }
+
+                            return data;
+                        }
+                    },
+
+                    {
+                        "data": "url"
+                    }
+
+                ],
+
+                initComplete: function() {
+                    var $buttons = $('.dt-buttons').hide();
+
+                    //hide the loader
+                    $("#loader").css("display", "none");
+                    $("#exportBtnArea").on("click", function() {
+                        var btnClass = '.buttons-' + 'csv';
+                        $buttons.find(btnClass).click();
+                    });
+
+                    var yesterdayDate = "2018-09-20";
+                    var previousDayDate = "2018-09-14";
+
+                    if (updateChart == false) {
+                        //dont load chart 
+                    } else if (fromDateForChart != "" && toDateForChart != "") {
+                        chartDataPreparer(data, fromDateForChart, toDateForChart);
+                    }
+
+
+                    addReloadButton();
+                    addSelectorForMultipleActionsOnKeywords();
+
+                }
+            });
+        }
+
+        
+        function loadTableCompetitor(data) {
+            var actualData = data["data"];
+
+            $.fn.dataTable.ext.errMode = 'none';
+
+            $('#competitorTable')
+
+                .on('error.dt', function(e, settings, techNote, message) {
+                    console.log('An error has been reported by Competitors Table: ', message);
+                })
+
+
+                .DataTable({
+                    "pageLength": 25,
+                    "dom": 'lBfrtip',
+                    "buttons": [
+                        'excelHtml5',
+                        'csvHtml5',
+
+                    ],
+                    "processing": true,
+                    "data": actualData,
+                    "columns": [
+                        { "data": "keyword_name" },
+                        {
+                            "data": "client_domain.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                //console.log(data);
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_1.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_2.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_3.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_4.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_5.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_6.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_7.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        },
+                        {
+                            "data": "competitor_8.position",
+
+                            "render": function(data, type, row, meta) {
+                                data = data + '';
+                                return data;
+                            }
+                        }
+
+                    ],
+                    initComplete: function() {
+                        var $buttons = $('.dt-buttons').hide();
+
+                        $("#exportBtnAreaInComptetiors").on("click", function() {
+                            var btnClass = '.buttons-' + 'csv';
+                            $buttons.find(btnClass).click();
+                        });
+                    }
+                });
+        }
+
+        function importKeywords() {
+            //get the data in popup
+            console.log("clicked importKeywords");
+
+            if ($("#multipleKeywords").val() != "") {
+                //disable file input
+                $("#keywordsCsvFile").attr("disabled", true);
+
+                var arrayOfLines = $('#multipleKeywords').val().split('\n');
+                console.log(arrayOfLines);
+
+                //check if group is there
+                var multipleKeywordsGroup = "";
+
+                multipleKeywordsGroup = $("#multipleKeywordsGroup").val();
+
+                //now pushing
+                addKeywordToDB(arrayOfLines, multipleKeywordsGroup);
+
+            } else {
+                //disable textarea input
+                $("#multipleKeywords").attr("disabled", true);
+                //uploading csv
+                var csvFile = document.getElementById("keywordsCsvFile").files[0];
+
+                var csvReturnData;
+                var reader = new FileReader();
+                reader.readAsText(csvFile);
+                reader.onload = function(event) {
+                    var csv = event.target.result;
+                    csvReturnData = $.csv.toArray(csv);
+                    //sucessfully got csv data
+                    console.log(csvReturnData);
+                    //check if group is there
+                    var multipleKeywordsGroup = "";
+
+                    multipleKeywordsGroup = $("#multipleKeywordsGroup").val();
+
+                    addKeywordToDB(csvReturnData, multipleKeywordsGroup);
+                    console.log("done pushing multiple keywords!");
+                    $("#statusOfMultipleKeywordsUpload").text("sucessfully uploaded all the keywords!");
+
+
+                };
+                reader.onerror = function() {
+                    alert('Unable to read ' + csvFile.fileName);
+                    $("#statusOfMultipleKeywordsUpload").text("Error uploading keywords!");
+                };
+            }
+
+
+        }
+
+        function fileUploaderAndReader(csvFile) {
+            var csvReturnData;
+            var reader = new FileReader();
+            reader.readAsText(csvFile);
+            reader.onload = function(event) {
+                var csv = event.target.result;
+                csvReturnData = $.csv.toArray(csv);
+                console.log(csvReturnData);
+
+
+            };
+            reader.onerror = function() {
+                alert('Unable to read ' + file.fileName);
+
+
+            };
+        }
+
+        function checkArray(my_arr) {
+            for (var i = 0; i < my_arr.length; i++) {
+                if (my_arr[i] === "") {
+                    //my_arr.splice(i,1);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function removeSpecialCharactersInBulkImport(keywords) {
+
+            for (var j = 0; j < keywords.length; j++) {
+                console.log(keywords[j]);
+                keywords[j] = keywords[j].replace(/[^a-zA-Z0-9 ]/g, "");
+                if (keywords[j] === "" || keywords[j] === " ") {
+                    keywords.splice(j, 1);
+                }
+            }
+
+            return keywords;
+        }
+
+        function addKeywordToDB(keywordsArray, group) {
+            //on click get the keyword and group if any
+            //var keyword = $("#keyword").val();
+            //var group = $("#group").val();
+
+            //var keywordsArray = [];
+            //keywordsArray.push(keyword);
+
+            //removing empty strings
+            $("#loaderBulkImport").css("display", "block");
+            var SanitizedKeywordsArray = removeSpecialCharactersInBulkImport(keywordsArray);
+
+
+            /*    for (var i = 0; i < keywordsArray.length; i++) {
+                    
+                    if (keywordsArray[i] === "" || keywordsArray[i] === " ") {
+                        keywordsArray.splice(i, 1);
+                    }
+                }*/
+
+            console.log("keywordsArray after removing empty strings:");
+            console.log(SanitizedKeywordsArray);
+
+
+            if (group == "") {
+                group = "default";
+            }
+
+            var keywordsObj = [{ "group_name": group, "keywords": SanitizedKeywordsArray }];
+
+            console.log("keywordsObj:");
+            console.log(keywordsObj);
+
+            //check if the keywords array is not empty
+            if (keywordsArray.length != 0) {
+                console.log("Keyword array is there! ");
+                //now keyword is there! so, try to push into db
+
+                //push to database
+                var addKeywordToDBObject = {
+                    "keyword_tool_id": window.localStorage.keyword_tool_id,
+                    "keywords_and_groups": keywordsObj
+                }
+
+                console.log("addKeywordToDBObject");
+                console.log(addKeywordToDBObject);
+
+                var urlForAddingKeywordsinDB = "http://167.99.159.221/add-keywords-and-group";
+                addKeywordToDBObject = JSON.stringify(addKeywordToDBObject);
+
+                $.ajax({
+                    type: "POST",
+                    url: urlForAddingKeywordsinDB,
+                    contentType: "application/json; charset=utf-8",
+                    data: addKeywordToDBObject,
+                    success: function(data) {
+                        console.log(data);
+                        $("#loaderBulkImport").css("display", "none");
+                        if (data.status == 0) {
+                            //error pushing to DB
+                            console.log("Failed pushing!");
+                            $("#keywordAddNotificationContent").text("Error! Adding Keyword");
+                            $("#keywordAddNotification").removeClass("alert-success");
+                            $("#keywordAddNotification").addClass("alert-danger");
+                            $("#keywordAddNotification").removeClass("hidden");
+                        } else if (data.status == 1) {
+                            //success
+                            console.log("done pushing!");
+                            $("#keyword").val("");
+                            $("#group").val("");
+                            $("#keywordAddNotificationContent").text("Success! Adding Keyword");
+                            $("#keywordAddNotification").removeClass("hidden");
+
+                        }
+                    },
+                    error: function(jqXHR, error, errorThrown) {
+                        $("#loaderBulkImport").css("display", "none");
+                        if (jqXHR.status && jqXHR.status == 400) {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                        } else {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                            console.log("Something went wrong");
+                        }
+                    }
+                });
+
+
+
+            } else {
+                alert("Enter some keyword!");
+            }
+
+
+
+        }
+
+        function addCompetitors() {
+            //
+            var addCompetitorsData = $("#addCompetitorsData").val();
+            if (addCompetitorsData != "" || undefined) {
+                //push
+                var addCompetitorsDatakaArray = [];
+                addCompetitorsDatakaArray.push(addCompetitorsData);
+
+                //push to database
+                var addCompetitorToDBObj = {
+                    "keyword_tool_id": window.localStorage.keyword_tool_id,
+                    "competitors_url": addCompetitorsDatakaArray
+                }
+                console.log(addCompetitorToDBObj);
+                addCompetitorToDBObj = JSON.stringify(addCompetitorToDBObj);
+                var competitorsKaUrl = "http://167.99.159.221/add-competitors-kwdtool";
+
+                $.ajax({
+                    type: "POST",
+                    url: competitorsKaUrl,
+                    contentType: "application/json; charset=utf-8",
+                    data: addCompetitorToDBObj,
+                    success: function(data) {
+                        console.log(data);
+                        if (data.status == 0) {
+                            //error pushing to DB
+                            console.log("Failed pushing!");
+                            $("#competitorAddNotificationContent").text("Error! Adding Competitor");
+                            $("#competitorAddNotification").removeClass("alert-success");
+                            $("#competitorAddNotification").addClass("alert-danger");
+                            $("#competitorAddNotification").removeClass("hidden");
+                        } else if (data.status == 1) {
+                            //success
+                            console.log("done pushing!");
+                            $("#addCompetitorsData").val("");
+                            $("#competitorAddNotificationContent").text("Success! Adding Competitor");
+                            $("#competitorAddNotification").removeClass("hidden");
+
+                        }
+                    },
+                    error: function(jqXHR, error, errorThrown) {
+                        if (jqXHR.status && jqXHR.status == 400) {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                        } else {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                            console.log("Something went wrong");
+                        }
+                    }
+                });
+
+            }
+        }
+
+        function getLastPositionData(selectedPosition, startDate, endDate) {
+            //initiate the loader
+            $("#loader").css("display", "block");
+            console.log(selectedPosition);
+            if (selectedPosition != "none" || undefined || "") {
+                //send this value to the endpoint
+
+                var yesterdayDate = "2018-09-20";
+                var previousDayDate = "2018-09-14";
+
+                var dataForLoadingRanksTable = {
+                    "keyword_tool_id": window.localStorage.keyword_tool_id,
+                    "start_date": previousDayDate,
+                    "end_date": yesterdayDate,
+                    "keyword_position_constraint": selectedPosition
+                };
+
+                dataForLoadingRanksTable = JSON.stringify(dataForLoadingRanksTable);
+
+                var urlForLoadingRanksTable = "http://167.99.159.221/client-keyword-position-table";
+
+                $.ajax({
+                    type: "POST",
+                    url: urlForLoadingRanksTable,
+                    contentType: "application/json; charset=utf-8",
+                    data: dataForLoadingRanksTable,
+                    success: function(data) {
+                        console.log(data);
+                        if (data.status == 0) {
+                            //error     
+                            console.log("error loading last position data");
+                        } else if (data.status == 1) {
+                            //success
+                            console.log("success loadinglast position data");
+                            loadTableRanks(data, startDate, endDate, false);
+
+                        }
+                    },
+                    error: function(jqXHR, error, errorThrown) {
+                        if (jqXHR.status && jqXHR.status == 400) {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                        } else {
+                            console.log(jQuery.parseJSON(jqXHR.responseText));
+                            console.log("Something went wrong");
+                        }
+                    }
+                });
+
+            }
+        }
+
+        /*var updates = {};
+          updates['/Keyword_Ranks/2018-08-06/datamintelligence/00:00:17/infusion systems market'] = "150";
+
+        firebase.database().ref().update(updates)*/
+        </script>
+        </body>
+
+</html>

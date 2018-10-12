@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SEO | GENESIS</title>
+    {% include 'header.html' %}
+    <style type="text/css">
+    .nav-tabs-custom>.nav-tabs>li>a {
+        color: #FFF;
+    }
+
+    .nav-tabs-custom>.nav-tabs {
+        margin-left: 25px;
+        margin-top: 2px;
+    }
+
+    .PositiveChangeInPosition {
+        color: #2ecc71;
+    }
+
+    .NegativeChangeInPosition {
+        color: #e74c3c;
+    }
+
+    .alert {
+        padding: 5px 35px;
+        margin-top: 10px;
+    }
+
+    #bulkImport {
+        text-decoration: underline;
+        color: #02b4b4;
+        cursor: pointer;
+    }
+
+    #bulkImportPopUp h4,
+    h3,
+    h2,
+    p {
+        color: #333;
+    }
+    </style>
+    {% include 'sidebar.html' %}
+    <!-- Content Wrapper. Contains page content (test)-->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <div class="nav-tabs-custom topSection">
+            <ul class="nav nav-tabs tabbedListItems">
+                <li class="active"><a data-toggle="tab" href="#keywordRanks">Keyword Ranks</a></li>
+                <li><a data-toggle="tab" href="#competitors">Competitors</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="keywordRanks" class="tab-pane fade in active">
+                    <section class="content-header">
+                        <div class="row" style="margin-top: -15px;">
+                            <div class="col-md-2" style="margin-bottom: 10px;">
+                                <!-- <div class="pickerContainer widget" style="width: 100%; "></div> -->
+                                <select style="width: 100%; border-radius: 3px;" onchange="keywordsDate(this);" id="keywordsDateSelector">
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select style="width: 100%; border-radius: 3px;" id="keywordsSelector" onchange="loadDataForASingleKeyword(this.value);">
+                                    <option>All Keywords</option>
+                                    <!-- <option>Keyword 1</option>
+            <option>Keyword 2</option>
+            <option>Keyword 3</option>
+            <option>Keyword 4</option>
+            <option>Keyword 5</option>
+            <option>Keyword 6</option> -->
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select style="width: 100%; border-radius: 3px;">
+                                    <option>Last Position</option>
+                                    <option>≤10</option>
+                                    <option>≤30</option>
+                                    <option>≤50</option>
+                                    <option>≤70</option>
+                                    <option>≤100</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1 col-md-offset-4">
+                                <a class="btn btn-primary btn-sm leadSenseBtn" href="#"><i class="fa fa-download"></i> Export to CSV</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="chart">
+                                    <canvas id="keywordRanksChart" width="510" height="150"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Main content -->
+                    <section class="content container-fluid sectionBlue">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <span>Add Keyword:</span>
+                            </div>
+                            <div class="col-md-3">
+                                <span>Assign to Group:</span>
+                            </div>
+                            <div class="col-md-3">
+                            </div>
+                            <div class="col-md-3">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 showInLine">
+                                <input type="text" class="inputTextTransparentBg" name="keyword" placeholder="keyword" id="keyword" onkeyup="removeSpecialCharacters(this);">
+                            </div>
+                            <div class="col-md-3 showInLine">
+                                <input type="text" class="inputTextTransparentBg" name="group" placeholder="Group (Optional)" id="group">
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-sm skyblueRoundedBtn" onclick="addKeywordToDB();"><i class="fa fa-plus"></i> Add</button> &nbsp;&nbsp;&nbsp;
+                                <a id="bulkImport" data-toggle="modal" data-target="#bulkImportPopUp"><i class="fa fa-plus-circle"></i> Bulk Import</a>
+                            </div>
+                            <div class="col-md-3 showInLine">
+                            </div>
+                            <!-- Bulk Import Popup -->
+                            <div id="bulkImportPopUp" class="modal fade" role="dialog">
+                                <div class="modal-dialog">
+                                    <!-- Bulk Import Popup content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Import from file</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><span>Select .csv file</span> ( one keyword per line )</p>
+                                            <input type="file" accept=".csv" name="keywordsCsvFile" class="form-control">
+                                            <p>Keywords</p>
+                                            <textarea id="multipleKeywords" class="form-control" rows="8"></textarea>
+                                            <p>Assign group</p>
+                                            <input type="text" name="multipleKeywordsGroup" class="form-control">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default btn-warning pull-left">Import Keywords</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="alert alert-success alert-dismissible fade in hidden" id="keywordAddNotification">
+                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                    <p id="keywordAddNotificationContent"><strong>Success!</strong> This alert box could indicate a successful or positive action.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="padding-top: 25px;">
+                            <div class="col-md-12">
+                                <div class="box-body table-responsive">
+                                    <table id="rankingTable" class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Keyword</th>
+                                                <th>Position</th>
+                                                <th>Change</th>
+                                                <th>Url</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="RankingtableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- /.col-md-12 -->
+                        </div>
+                        <!--   <div id="tempData"></div> -->
+                        <!-- /.row -->
+                    </section>
+                    <!-- /.content -->
+                </div>
+                <!-- /.tab -->
+                <div id="competitors" class="tab-pane fade in">
+                    <section class="content-header">
+                        <div class="row" style="margin-top: -15px;">
+                            <!--     <div class="col-md-1 col-md-offset-1" style="margin-bottom: 10px;">
+
+        <div class="pickerContainer widget" style="width: 100%; "></div>
+        </div> -->
+                            <div class="col-md-3">
+                                <select style="width: 100%; border-radius: 3px;">
+                                    <option>All Keywords</option>
+                                    <option>Keyword 1</option>
+                                    <option>Keyword 2</option>
+                                    <option>Keyword 3</option>
+                                    <option>Keyword 4</option>
+                                    <option>Keyword 5</option>
+                                    <option>Keyword 6</option>
+                                </select>
+                            </div>
+                            <!--         <div class="col-md-1">
+          <select style="width: 100%; border-radius: 3px;">
+            <option>Last Position</option>
+            <option>≤10</option>
+            <option>≤30</option>
+            <option>≤50</option>
+            <option>≤70</option>
+            <option>≤100</option>
+          </select>
+        </div> -->
+                            <div class="col-md-1 col-md-offset-7">
+                                <a class="btn btn-primary btn-sm leadSenseBtn" href="#"><i class="fa fa-download"></i> Export to CSV</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="chart">
+                                    <canvas id="competitorRanksChart" width="510" height="150"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Main content -->
+                    <section class="content container-fluid sectionBlue">
+                        <div class="row">
+                            <div class="col-md-4 showInLine">
+                                <span>Add Competitor:</span>
+                                <input type="text" class="inputTextTransparentBg" name="keyword" placeholder="Competitor">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm skyblueRoundedBtn"><i class="fa fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="box-body table-responsive">
+                                    <table id="competitorTable" class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Keyword</th>
+                                                <th>datamintelligence.com</th>
+                                                <th>mordorintelligence.com</th>
+                                                <th>marketsandmarkets.com</th>
+                                                <th>alliedmarketresearch.com</th>
+                                                <th>grandviewresearch.com</th>
+                                                <th>transparencymarketresearch.com</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="competitorTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- /.col-md-12 -->
+                        </div>
+                        <!-- /.row -->
+                    </section>
+                    <!-- /.content -->
+                </div>
+            </div>
+            <!-- /.tab -->
+        </div>
+        <!-- /.tab -->
+    </div>
+    <!-- /.content-wrapper -->
+    {% include 'footer.html' %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-range/2.2.0/moment-range.min.js"></script>
+    <script type="text/javascript">
+    //window['moment-range'].extendMoment(moment);
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    function newDate(date) {
+        //return moment().add(days, 'd').toDate();
+
+        return moment().subtract(7, 'day').format("YYYY-MM-DD");
+    }
+
+    function addData(chart, label, data) {
+        chart.data.labels.push(label);
+        chart.data.datasets.forEach((dataset) => {
+            console.log(data);
+            dataset.data.push(data);
+        });
+        chart.update();
+    }
+
+
+    //options
+    var options = {
+        responsive: true,
+        maintainAspectRatio: true,
+        cubicInterpolationMode: "monotone",
+        legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+                fontColor: "#bfbfbf",
+                fontSize: 14,
+                usePointStyle: true
+            }
+        }
+    };
+
+    DataForTable1 = [];
+    LabelForTable1 = [];
+
+    function chartDataPreparer(data, fromDate, ToDate) {
+        var _fromDate = fromDate;
+        var _ToDate = ToDate;
+        ReceivedData = data;
+
+        for (var k in ReceivedData) {
+            console.log(ReceivedData[k].points);
+            DataForTable1.push(ReceivedData[k].points);
+            LabelForTable1.push(k);
+        }
+
+        //now print chart
+
+        var ctx = $("#keywordRanksChart");
+
+        var datasetValue = [];
+        for (var j = 0; j < DataForTable1.length; j++) {
+            var colorForLine = getRandomColor();
+            datasetValue[j] = {
+                backgroundColor: colorForLine,
+                borderColor: colorForLine,
+                fill: false,
+                radius: 5,
+                label: LabelForTable1[j],
+                data: DataForTable1[j],
+                borderWidth: 0
+            }
+        }
+
+        console.log("done preparing data for chart!");
+        console.log(datasetValue);
+
+        if (_fromDate != "" && _ToDate != "") {
+            //get the dates
+            var DateLabels = getAllTheDatesInThisDateRange(_fromDate, _ToDate, 'days');
+            //create Chart class object
+            chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: DateLabels,
+                    datasets: datasetValue
+                },
+                options: options
+            });
+        }
+    }
+
+    function getAllTheDatesInThisDateRange(from, to, type) {
+        var outputArr = [];
+        if (from != "" && to != "") {
+            var fromDate = from;
+            var toDate = to;
+            console.log("in getAllTheDatesInThisDateRange");
+            console.log(fromDate);
+            console.log(toDate);
+
+            var range = moment().range(fromDate, toDate);
+            if (type != "") {
+                var diff = range.diff(type);
+                var array = range.toArray(type);
+            } else {
+                var diff = range.diff('days');
+                var array = range.toArray('days');
+            }
+
+            $.each(array, function(i, e) {
+                outputArr.push(moment(e).format("YYYY-MM-DD"));
+
+            });
+
+            console.log('Range', range);
+            console.log('diff', diff);
+
+            return outputArr;
+        }
+    }
+
+    function getChartDataFromRemoteServer(fromDate, ToDate) {
+
+        if (fromDate != "" && ToDate != "") {
+            //load from the API
+            //var urlToLoad = "http://localhost:8001/keywordrankschart/"+fromDate+"/"+ToDate;
+            var urlToLoad = "http://api.jsonbin.io/b/5b8930773ffac56f4bd783ae";
+            console.log("loading keywordRanksChart for: " + urlToLoad);
+            $.ajax({
+                url: urlToLoad,
+                type: "GET",
+                success: function(data) {
+                    console.log(data);
+                    console.log("got data, now preparing chart!");
+                    chartDataPreparer(data, fromDate, ToDate);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
+    }
+
+    $(function() {
+        //get the line chart canvas
+        var one_week = moment().subtract(7, 'day').format("YYYY-MM-DD");
+        var yesterday = moment().subtract(1, 'day').format("YYYY-MM-DD");
+
+        getChartDataFromRemoteServer(one_week, yesterday);
+
+        var competitorsChart = $("#competitorRanksChart");
+
+        var competitorRanksChart = new Chart(competitorsChart, {
+            type: 'bar',
+            data: {
+                labels: ['DMI', 'competitor1', 'competitor2', 'competitor3'],
+                datasets: [{
+                        label: 'Rank 100+',
+                        data: [25, 35, 95, 49],
+                        backgroundColor: '#d73224',
+                    },
+                    {
+                        label: 'Rank 31-100',
+                        data: [65, 55, 44, 39],
+                        backgroundColor: '#e35218',
+                    },
+                    {
+                        label: 'Rank 21-30',
+                        data: [35, 25, 24, 29],
+                        backgroundColor: '#ea9225',
+                    },
+                    {
+                        label: 'Rank 11-20',
+                        data: [45, 65, 14, 52],
+                        backgroundColor: '#EFAE2C',
+                    },
+                    {
+                        label: 'Rank 6-10',
+                        data: [69, 98, 26, 84],
+                        backgroundColor: '#FEE855',
+                    },
+                    {
+                        label: 'Rank 4-5',
+                        data: [55, 24, 15, 62],
+                        backgroundColor: '#EBE54C',
+                    },
+                    {
+                        label: 'Rank 2-3',
+                        data: [45, 31, 26, 14],
+                        backgroundColor: '#9ABA4C',
+                    },
+                    {
+                        label: 'Rank 1',
+                        data: [21, 15, 11, 0],
+                        backgroundColor: '#56BA4C',
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    xAxes: [{ stacked: true }],
+                    yAxes: [{ stacked: true }]
+                },
+                legend: {
+                    display: true,
+                    position: "bottom",
+                    labels: {
+                        fontColor: "#bfbfbf",
+                        fontSize: 14,
+                        usePointStyle: true
+                    }
+                }
+            }
+        });
+
+
+    });
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script>
+    </script>
+    <script>
+    var table;
+    var firebaseRequestsCounter = 0;
+
+    function loadDataForASingleKeyword(input) {
+        var keyword = input;
+        console.log("selected keyword is: " + keyword);
+
+        //load only this table data...
+        addData(chart, "Keyword 11", 5);
+
+    }
+
+    function removeSpecialCharacters(input) {
+        var textToSanitize = input.value;
+        console.log(textToSanitize);
+        var SanitizedText = textToSanitize.replace(/[^a-zA-Z ]/g, "");
+        $(input).val(SanitizedText);
+
+    }
+
+    function keywordsDate(selectObject) {
+        var keywordsPeriod = selectObject.value;
+        console.log("selected date in kwtool is: " + keywordsPeriod);
+
+        if (keywordsPeriod != "") {
+            loadKeywordRanksFromFirebase(keywordsPeriod, false);
+        }
+
+    }
+
+    $(document).ready(function() {
+
+        var keywordsDateSelectorData = "";
+
+        var datesArr = ["One Week", "Two Weeks", "One Month", "Three Months", "Six Months", "One year", "Two Years"];
+
+        var datesDict = [];
+
+        var one_week = moment().subtract(7, 'day').format("YYYY-MM-DD");
+        var two_weeks = moment().subtract(14, 'day').format("YYYY-MM-DD");
+        var one_month = moment().subtract(30, 'day').format("YYYY-MM-DD");
+        var three_months = moment().subtract(90, 'day').format("YYYY-MM-DD");
+        var six_months = moment().subtract(180, 'day').format("YYYY-MM-DD");
+        var one_year = moment().subtract(365, 'day').format("YYYY-MM-DD");
+        var two_years = moment().subtract(730, 'day').format("YYYY-MM-DD");
+
+        datesDict.push(one_week, two_weeks, one_month, three_months, six_months, one_year, two_years);
+
+        for (var i = 0; i < 7; i++) {
+            keywordsDateSelectorData += '<option value="' + datesDict[i] + '">' + datesArr[i] + '</option>';
+        }
+
+        $("#keywordsDateSelector").append(keywordsDateSelectorData);
+
+
+
+
+    });
+
+    function AddOptionsInkeywordsSelector() {
+        //loading keywords in keywords selector
+
+        var keywordsSelectorData = "";
+        for (keyword in previousDayDataHolder) {
+            keywordsSelectorData += '<option value="' + keyword + '">' + keyword + '</option>';
+        }
+
+        $("#keywordsSelector").append(keywordsSelectorData);
+    }
+
+    function getDatesFromPicker() {
+        //clear the yesterday data;
+        //yesterdayData = {};
+        console.log("clicked apply button");
+        console.log($('.dr1.from').val());
+        console.log($('.dr1.to').val());
+        console.log($('.dr2.from').val());
+        console.log($('.dr2.to').val());
+
+        var dr1_from = $('.dr1.from').val();
+        var dr1_to = $('.dr1.to').val();
+        var dr2_from = $('.dr2.from').val();
+        var dr2_to = $('.dr2.to').val();
+        //check if the values are not empty or undefined
+        if (dr1_from != "" && dr1_to != "" && ($(".enable-comparison").is(":checked") == false)) {
+            dr1_from = moment(dr1_from, "DD-MM-YYYY").format("YYYY-MM-DD");
+            dr1_to = moment(dr1_to, "DD-MM-YYYY").format("YYYY-MM-DD");
+            console.log(dr1_from);
+            console.log(dr1_to);
+
+            //now we got the date.. query in the firebase with this date
+            loadKeywordRanksFromFirebase(dr1_from, false);
+            //var urlTemp = "http://flask-env.xknkdkh3pw.ap-south-1.elasticbeanstalk.com/data/date-range/"+dr1_from+"/"+dr1_to;
+            //getData(urlTemp);
+            //loadTableSingle(urlTemp);
+        } else {
+            console.log("dr1 from and dr1 to empty or checkbox is not checked");
+        }
+
+        if (dr2_from != "" && dr2_to != "" && ($(".enable-comparison").is(":checked") == true)) {
+            dr1_from = moment(dr1_from, "DD-MM-YYYY").format("YYYY-MM-DD");
+            dr1_to = moment(dr1_to, "DD-MM-YYYY").format("YYYY-MM-DD");
+
+            dr2_from = moment(dr2_from, "DD-MM-YYYY").format("YYYY-MM-DD");
+            dr2_to = moment(dr2_to, "DD-MM-YYYY").format("YYYY-MM-DD");
+
+            console.log(dr2_from);
+            console.log(dr2_to);
+
+            //load data for dr1
+            //var urlTemp = "http://flask-env.xknkdkh3pw.ap-south-1.elasticbeanstalk.com/data/date-range/"+dr1_from+"/"+dr1_to;
+
+            //loadYesterdayData(dr2_from,dr2_to,false,urlTemp);
+            //getData(urlTemp);
+
+            //do the comparision work now
+
+
+        } else {
+
+        }
+
+    }
+
+
+    $oldJquery(document).ready(function() {
+
+
+        $oldJquery('.pickerContainer.widget').DateRangesWidget();
+        //$oldJquery('.pickerContainer.widget').DatePickerSetDate(todayDate());
+
+        /*prettyPrint(); date: [moment(), moment()]*/
+    });
+
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyAdYF8aEwLGUGDe9cPNa1o8NtDoN-thSv8",
+        authDomain: "keyword-ranking-tool.firebaseapp.com",
+        databaseURL: "https://keyword-ranking-tool.firebaseio.com",
+        projectId: "keyword-ranking-tool",
+        storageBucket: "keyword-ranking-tool.appspot.com",
+        messagingSenderId: "79649534024"
+    };
+    firebase.initializeApp(config);
+
+
+    $(document).ready(function() {
+
+        //check if the manager_account_id exists
+        if(window.localStorage.manager_account_id){
+            //exists
+            var dataForKeywordChecking = {
+                "manager_account_id": window.localStorage.manager_account_id
+            }
+            
+            dataForKeywordChecking = JSON.stringify(dataForKeywordChecking);
+
+            var urlForCheckingKeywordRankingTool = "http://167.99.159.221/keyword-tool-user-status";
+
+            $.ajax({
+                type: "POST",
+                url: urlForCheckingKeywordRankingTool,
+                contentType: "application/json; charset=utf-8",
+                data: dataForKeywordChecking,
+                success: function(data){
+                    console.log(data);
+                    if(data.status == 0){
+                        //show the UI to add a domain
+                        $(".content-wrapper").html()
+                    }
+                },
+                 error: function(jqXHR, error, errorThrown) {  
+               if(jqXHR.status&&jqXHR.status==400){
+                    console.log(jQuery.parseJSON(jqXHR.responseText)); 
+               }else{
+                   console.log(jQuery.parseJSON(jqXHR.responseText)); 
+                   console.log("Something went wrong");
+               }
+          }
+            });
+        }else{
+            //not exists
+            
+        }
+
+
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                // User is signed in.
+                //console.log(user);
+                console.log("user is signed in");
+
+            } else {
+                // No user is signed in.
+                console.log("user is not signed in")
+                var provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('profile');
+                provider.addScope('email');
+                provider.addScope('https://www.googleapis.com/auth/plus.me');
+
+                firebase.auth().signInWithPopup(provider).then(function() {
+                    console.log("auth done!")
+                }); // Opens a popup window and returns a promise to handle errors.
+            }
+
+        });
+        //var user = firebase.auth().currentUser;
+
+
+
+        // Get a reference to the database service
+        var database = firebase.database();
+        //var todayDate = moment().format("YYYY-MM-DD");
+        var yesterdayDate = moment().subtract(1, 'day').format("YYYY-MM-DD");
+        loadKeywordRanksFromFirebase(yesterdayDate, true);
+
+        var FirebaseQueryForComptetitors = "Keyword_Ranks/2018-08-23/datamintelligence/competitor_data/data/";
+        console.log("Loading Ref: " + FirebaseQueryForComptetitors + " for Competitors Table");
+        var starCountRef2 = firebase.database().ref(FirebaseQueryForComptetitors);
+        starCountRef2.on('value', function(snapshot) {
+            var dataSet2 = snapshot.val();
+            console.log("Loaded Data for Ref:" + FirebaseQueryForComptetitors)
+            console.log(dataSet2);
+            loadTableCompetitor(dataSet2);
+
+        });
+
+
+    });
+
+
+    function loadKeywordRanksFromFirebase(date, isYesterday) {
+
+        if (date != "") {
+            //var yesterdayDate = date;
+            var yesterdayDate = moment().subtract(1, 'day').format("YYYY-MM-DD");
+            var FirebaseQuery = "Keyword_Ranks/" + yesterdayDate + "/datamintelligence";
+            console.log("Loading Ref:" + FirebaseQuery + " for keywords Rank Table")
+            var starCountRef = firebase.database().ref(FirebaseQuery);
+            starCountRef.on('value', function(snapshot) {
+                if (snapshot.val() != null) {
+                    var dataSet = snapshot.val();
+                    console.log("Loaded Data for Ref:" + FirebaseQuery);
+                    console.log(dataSet);
+                    if (firebaseRequestsCounter > 1) {
+                        table.destroy();
+                    }
+                    firebaseRequestsCounter++;
+                    console.log(firebaseRequestsCounter);
+
+                    //now load previousDayData too
+                    //need to subtract 
+                    if (isYesterday == true) {
+                        var previousDayDate = moment().subtract(6, 'day').format("YYYY-MM-DD");
+                    } else {
+                        var previousDayDate = date;
+                    }
+
+                    var FirebaseQueryForPreviousDay = "Keyword_Ranks/" + previousDayDate + "/datamintelligence/kv_data";
+                    console.log("Loading Ref:" + FirebaseQueryForPreviousDay + " for key value based data of " + previousDayDate);
+
+                    var starCountRef3 = firebase.database().ref(FirebaseQueryForPreviousDay);
+                    starCountRef3.on('value', function(snapshot) {
+                        if (snapshot.val() != null) {
+                            var previousDayData = snapshot.val();
+                            console.log("Loaded Data for Ref:" + FirebaseQueryForPreviousDay);
+                            console.log(previousDayData);
+                            loadTableRanks(dataSet, previousDayData);
+                        }
+                    });
+                } else {
+                    alert("No data Available for this date!");
+                }
+
+            });
+        }
+
+    }
+
+    function loadTableRanks(data, previousDayData) {
+        //console.log(data);
+        window.previousDayDataHolder = previousDayData;
+        //call the function to fill data in keywords selection box
+        AddOptionsInkeywordsSelector();
+
+        var newData = data["owners_data"]["data"];
+        var currentKeyword;
+
+        table = $('#rankingTable').DataTable({
+            "pageLength": 25,
+            "processing": true,
+            "destroy": true,
+            "data": newData,
+            "columns": [{
+                    "data": "keyword",
+                    "render": function(data, type, row, meta) {
+                        if (type === 'display') {
+                            currentKeyword = data;
+                            //console.log("currentKeyword is :" + currentKeyword);
+                            //now keep this keyword surrounded in a span
+                            data = "<span>" + data + "</span>";
+                        }
+                        return data;
+                    }
+                },
+                {
+                    "data": "position",
+                    'sType': 'num-html'
+                },
+
+                {
+                    "data": "position",
+                    'sType': 'num-html',
+                    "render": function(data, type, row, meta) {
+                        if (type === 'display') {
+                            data = parseInt(previousDayDataHolder[currentKeyword] ? previousDayDataHolder[currentKeyword] : 0) - parseInt(data);
+                        }
+                        if (data > 0) {
+                            data = "<span class='PositiveChangeInPosition'>" + data + "</span>";
+                        } else if (data < 0) {
+                            data = "<span class='NegativeChangeInPosition'>" + data + "</span>";
+                        } else {
+                            data = "<span class='NoChangeInPosition'>" + data + "</span>";
+                        }
+
+                        return data;
+                    }
+                },
+
+                {
+                    "data": "url"
+                }
+
+            ]
+        });
+    }
+
+
+    function loadTableCompetitor(data) {
+        $('#competitorTable').DataTable({
+            "pageLength": 25,
+            "processing": true,
+            "data": data,
+            "columns": [
+                { "data": "keyword" },
+                { "data": "own.position", 'sType': 'num-html' },
+                { "data": "competitor1.position", 'sType': 'num-html' },
+                { "data": "competitor2.position", 'sType': 'num-html' },
+                { "data": "competitor3.position", 'sType': 'num-html' },
+                { "data": "competitor4.position", 'sType': 'num-html' },
+                { "data": "competitor5.position", 'sType': 'num-html' }
+            ]
+        });
+    }
+
+
+    function addKeywordToDB() {
+        //on click get the keyword and group if any
+        var keyword = $("#keyword").val();
+        var group = $("#group").val();
+
+        if (group == "") {
+            group = "default";
+        }
+
+        if (keyword != "") {
+            console.log("Keyword is there! : " + keyword);
+            //now keyword is there! so, try to push into db
+            var FirebaseRefForKeywords = "Keywords/datamintelligence/";
+            console.log(FirebaseRefForKeywords)
+            var keywordsCount = firebase.database().ref(FirebaseRefForKeywords);
+            keywordsCount.child(keyword).set(group).then(function() {
+                console.log("done pushing!");
+
+                $("#keyword").val("");
+                $("#group").val("");
+                $("#keywordAddNotificationContent").text("Success! Adding Keyword");
+                $("#keywordAddNotification").removeClass("hidden");
+
+
+            }).catch(function(error) {
+
+                console.log("Failed pushing!" + error);
+                $("#keywordAddNotificationContent").text("Error! Adding Keyword");
+                $("#keywordAddNotification").removeClass("alert-success");
+                $("#keywordAddNotification").addClass("alert-danger");
+                $("#keywordAddNotification").removeClass("hidden");
+
+            });
+
+        } else {
+            alert("Enter some keyword!");
+        }
+    }
+
+    /*var updates = {};
+      updates['/Keyword_Ranks/2018-08-06/datamintelligence/00:00:17/infusion systems market'] = "150";
+
+    firebase.database().ref().update(updates)*/
+    </script>
+    </body>
+
+</html>

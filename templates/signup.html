@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SIGN UP | GENESIS</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='dist/css/paper_bootstrap.min.css') }}">
+    <style type="text/css">
+    body {
+        background: linear-gradient( rgba(20, 20, 20, .5),
+        rgba(20, 20, 20, .5)), url("../static/dist/img/genesisbg.jpg");
+
+        /* Center and scale the image nicely */
+        /* background-position: center;*/
+        background-size: cover;
+        color: #FFF;
+    }
+
+    h1,
+    h2,
+    h3,
+    .form-control {
+        color: #FFF;
+    }
+
+    select {
+        color: #333;
+    }
+
+    select option {
+        color: #000;
+    }
+
+    .signUpArea {
+        background-color: #40409a;
+        float: right;
+        padding-right: 75px;
+        margin-top: 3%;
+    }
+
+    .signUpArea::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0%;
+        width: 20%;
+        height: 100%;
+        background: #40409a;
+        border-color: #40409a;
+        border-radius: 65% 0 0 65%;
+        box-shadow: -130px 0px 0 160px #40409a;
+        z-index: -1;
+    }
+
+    .signupBtn {
+        border-radius: 50px;
+        padding: 8px 30px;
+    }
+
+    @media (min-width: 1920px) and (max-width: 2048px) {
+        .signUpArea {
+            margin-top: 10%;
+            padding-right: 150px;
+        }
+    }
+
+    @media (min-width: 1025px) and (max-width: 1919px) {
+        .signUpArea {
+            margin-top: 10%;
+            padding-right: 100px;
+        }
+    }
+    </style>
+</head>
+
+<body>
+    <div class="signUpArea">
+        <form id="signupForm">
+            <h2>Register Now!</h2>
+            <br>
+            <label for="name">NAME</label>
+            <input type="text" name="client_name" id="name" placeholder="Enter Your Name" class="form-control" required>
+            <br>
+            <label for="email">BUSINESS EMAIL</label>
+            <input type="email" name="client_email" id="email" placeholder="yourname@company.com" class="form-control" required>
+            <br>
+            <label for="designation">DESIGNATION</label>
+            <br>
+            <select class="form-control" id="designation" name="client_designation" required>
+                <option>Select your role</option>
+                <option>Marketer</option>
+                <option>Analyst</option>
+                <option>CEO</option>
+                <option>Other</option>
+            </select>
+            <br>
+            <label for="company">COMPANY</label>
+            <input type="text" name="client_company" placeholder="Enter your Company" class="form-control" required>
+            <br>
+            <label for="password">PASSWORD</label>
+            <input type="password" name="client_password" id="password" placeholder="Password" class="form-control" required>
+            <br>
+            <center>
+                <button class="btn btn-danger signupBtn">SIGN UP</button>
+            </center>
+        </form>
+    </div>
+    <!-- jQuery 3 -->
+    <script src="{{ url_for('static', filename='plugins/jquery/dist/jquery.min.js') }}"></script>
+    <script type="text/javascript">
+    	function getFormData($form){
+    var unindexed_array = $form.serializeArray();
+    var indexed_array = {};
+
+    $.map(unindexed_array, function(n, i){
+        indexed_array[n['name']] = n['value'];
+    });
+
+    return indexed_array;
+}
+
+    $("#signupForm").submit(function(event) {
+        // body...
+        event.preventDefault(); // Prevent the form from submitting via the browser
+        var form = $(this);
+        var Send_data = getFormData(form);
+        var urlSignUp = "http://167.99.159.221/signup";
+        
+        var tempSend = JSON.stringify(Send_data);
+        console.log(tempSend);
+        $.ajax({
+            type: "POST",
+            url: urlSignUp,
+            contentType: "application/json; charset=utf-8",
+            data: tempSend,
+            success: function(data){
+            	console.log(data);
+            	//check if manager_account_id is present in response
+            	console.log(data.manager_account_id);
+            	if(data.manager_account_id){
+            		//show new popup and reset form fields
+            		window.location.href = "/login";
+            	}
+            },
+            error: function(jqXHR, error, errorThrown) {  
+               if(jqXHR.status&&jqXHR.status==400){
+                    console.log(jQuery.parseJSON(jqXHR.responseText)); 
+               }else{
+               	   console.log(jQuery.parseJSON(jqXHR.responseText)); 
+                   console.log("Something went wrong");
+               }
+          }
+        });
+    });
+    </script>
+</body>
+
+</html>

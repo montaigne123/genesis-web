@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>GENESIS</title>
+    {% include 'header.html' %} {% include 'sidebar.html' %}
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="row">
+                <div class="col-sm-4" style="margin-bottom: 10px;">
+                    <!--  <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+    <i class="fa fa-calendar"></i>&nbsp;
+    <span></span> <i class="fa fa-caret-down"></i>
+</div> -->
+                    <div class="pickerContainer widget"></div>
+                </div>
+                <div class="col-sm-3">
+                    <input type="number" id="customNumber" class="hidden">
+                </div>
+                <div class="col-sm-2 col-sm-offset-3">
+                    <a class="btn btn-default" href="#"><i class="fa fa-download"></i> Export to CSV</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="box box-success">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">Clicks Vs Conversions</h3>
+                        </div>
+                        <div class="box-body">
+                            <div class="chart">
+                                <canvas id="barChart" width="510" height="230"></canvas>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="box box-success">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">Clicks Vs Conversions</h3>
+                        </div>
+                        <div class="box-body">
+                            <div class="chart">
+                                <canvas id="areaChart" style="height: 230px; width: 510px;" width="510" height="230"></canvas>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Main content -->
+        <section class="content container-fluid">
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="box box-success">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">Overview</h3>
+                        </div>
+                        <div class="box-body">
+                            <p style="font-weight: 600;">Geography</p>
+                            <ul class="overViewLists">
+                                <li><a href="#">North America</a></li>
+                                <li><a href="#">Europe</a></li>
+                                <li><a href="#">Asia Pacific</a></li>
+                                <li><a href="#">Middle Eastern Africa</a></li>
+                                <li><a href="#">Rest of the World</a></li>
+                            </ul>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                </div>
+                <div class="col-md-10">
+                    <div class="box box-success">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">Paid Marketing</h3>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="nav-tabs-custom">
+                            <ul class="nav nav-tabs" id="tabbedListItems">
+                                <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
+                                <!-- <li><a data-toggle="tab" href="#menu1">Menu1<i class="fa fa-times closeTab"></i></a></li> -->
+                            </ul>
+                            <div class="tab-content">
+                                <div id="home" class="tab-pane fade in active">
+                                    <div class="box-body table-responsive">
+                                        <table id="example1" class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Product Title</th>
+                                                    <th>Max. CPC</th>
+                                                    <th>Clicks</th>
+                                                    <th>Impr.</th>
+                                                    <th>CTR</th>
+                                                    <th>Avg. CPC</th>
+                                                    <th>Cost</th>
+                                                    <th>Avg. Pos</th>
+                                                    <th>Ad Conv.</th>
+                                                    <th>Cost/Conv.</th>
+                                                    <th>Conv. rate</th>
+                                                    <th>SIS</th>
+                                                    <th>SEM IS</th>
+                                                    <th>Users</th>
+                                                    <th>%New Users</th>
+                                                    <th>Sessions</th>
+                                                    <th>Avg. Session Dur.</th>
+                                                    <th>Bounce Rate</th>
+                                            </thead>
+                                            <tfoot>
+                                                <tr>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                </tr>
+                                            </tfoot>
+                                            <tbody id="tableBody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="menu1" class="tab-pane fade">
+                                    <h1>menu1 content</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    {% include 'footer.html' %}
+    <script src="{{ url_for('static', filename='customCharts.js') }}"></script>
+    <script>
+    var dataGlobal;
+    var table;
+    var yesterdayData;
+
+    function loadYesterdayData(date2_from, date2_to, loadAgain, TableToBeLoadedUrl) {
+        if (date2_from != "" && date2_to != "") {
+            var yesterdayAjaxUrl = "http://167.99.159.221/data/date-range/" + date2_from + "/" + date2_to;
+            $.ajax({
+                url: yesterdayAjaxUrl,
+                contentType: 'application/json',
+                type: "GET",
+                success: function(data) {
+                    //now put this data in yesterdayData
+                    yesterdayData = data;
+                    console.log("Data to be compared with:")
+                    console.log(yesterdayData);
+                    if (loadAgain == true) {
+                        loadTable(function() {
+                            addReloadButton();
+                        }, TableToBeLoadedUrl);
+                    } else {
+                        //dont load
+                        table.destroy();
+                        loadTable(function() {
+                            addReloadButton();
+                        }, TableToBeLoadedUrl);
+                    }
+
+                    if (TableToBeLoadedUrl != "" || TableToBeLoadedUrl != "undefined") {
+                        //then load the new table with this url
+
+
+                    }
+
+                }
+            });
+        }
+    }
+
+
+    function makeComparisions(data, type, row, columnName, subKey, reverseLogic) {
+        if (type === 'display') {
+            //check with the yesterday's data
+            var adGroupName = row['name'];
+            //console.log(adGroupName);
+            if (subKey == "analytics") {
+                //check if there is analytics data in yesterdays data
+                if (typeof yesterdayData.key_value_paired[adGroupName][subKey] !== "undefined") {
+                    //console.log(yesterdayData.key_value_paired[adGroupName][subKey][columnName]);  
+                    var oldData = yesterdayData.key_value_paired[adGroupName][subKey][columnName];
+                } else {
+                    //data is not there or empty or undefined
+                    //so making it Zero for calculation purposes
+                    var oldData = 0;
+                }
+
+            } else {
+                //console.log(yesterdayData.key_value_paired[adGroupName][columnName]);  
+                var oldData = yesterdayData.key_value_paired[adGroupName][columnName];
+            }
+            //converting string data to integer data
+            /*data =+ data;
+            oldData =+ oldData;*/
+
+            var data1 = parseFloat(data);
+            var oldData1 = parseFloat(oldData);
+            if (reverseLogic != true) {
+                if (data1 > oldData1) {
+                    //console.log("New data is bigger");
+                    data = "<span class='IncreasedValue' rel='tooltip' placement='top' data-toggle='tooltip' data-title='<b>Old Value: " + oldData + "</b><br><b>New Value: " + data + "</b><br><b>Change: " + Math.round(((data1 - oldData1) / oldData1) * 100) + "%</b>' data-html='true'>" + data + "</span>";
+                } else if (data1 < oldData1) {
+                    //console.log("Old data is bigger"); 
+                    data = "<span class='DecreasedValue' rel='tooltip' placement='top' data-toggle='tooltip' data-title='<b>Old Value: " + oldData + "</b><br><b>New Value: " + data + "</b><br><b>Change: " + Math.round(((data1 - oldData1) / oldData1) * 100) + "%</b>' data-html='true'>" + data + "</span>";
+                } else {
+                    //no change
+                    data = "<span class='NoChangeValue'>" + data + "</span>";
+                }
+            } else {
+                //reverse the logic
+                if (data1 == 0 || oldData1 == 0) {
+                    //skip the coloring work for it
+                    data = "<span class='NoChangeValue'>" + data + "</span>";
+                } else {
+                    if (data1 > oldData1) {
+                        //console.log("New data is bigger");
+                        data = "<span class='DecreasedValue' rel='tooltip' placement='top' data-toggle='tooltip' data-title='<b>Old Value: " + oldData + "</b><br><b>New Value: " + data + "</b><br><b>Change: " + Math.round(((data1 - oldData1) / oldData1) * 100) + "%</b>' data-html='true'>" + data + "</span>";
+                    } else if (data1 < oldData1) {
+                        //console.log("Old data is bigger"); 
+                        data = "<span class='IncreasedValue' rel='tooltip' placement='top' data-toggle='tooltip' data-title='<b>Old Value: " + oldData + "</b><br><b>New Value: " + data + "</b><br><b>Change: " + Math.round(((data1 - oldData1) / oldData1) * 100) + "%</b>' data-html='true'>" + data + "</span>";
+                    } else {
+                        //no change
+                        data = "<span class='NoChangeValue'>" + data + "</span>";
+                    }
+                }
+
+            }
+        }
+        return data;
+    }
+
+
+    function loadTable(callback, url) {
+        console.log(url);
+        var ajaxUrl = url;
+        console.log(ajaxUrl);
+
+        table = $('#example1')
+            .on('xhr.dt', function(e, settings, json, xhr) {
+                e.preventDefault();
+                dataGlobal = json;
+                //new data which will be used for creating session tabs
+                console.log("dataGlobal: ");
+                console.log(dataGlobal);
+
+            })
+            .DataTable({
+                "pageLength": 25,
+                "processing": true,
+                "ajax": ajaxUrl,
+                "columns": [{
+                        "data": "name",
+                        "render": function(data, type, row, meta) {
+                            if (type === 'display') {
+                                var WhiteSpacesRemovedData = data.replace(/[^a-zA-Z]/g, "");
+                                data = '<a href="#' + WhiteSpacesRemovedData + '" class="fixedPos">' + data + '</a>';
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.defaultMaxCPC",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "defaultMaxCPC");
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.clicks",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "clicks");
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.impressions",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "impressions");
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.ctr",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "ctr");
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.avgCPC",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "avgCPC", "", true);
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.cost",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "cost", "", true);
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.avgPosition",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "avgPosition", "", true);
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.conversions",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "conversions");
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.costConv",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "costConv", "", true);
+                            return data;
+                        }
+                    },
+                    {
+                        "data": "data.convRate",
+                        "render": function(data, type, row, meta) {
+                            data = makeComparisions(data, type, row, "convRate");
+                            return data;
+                        }
+                    },
+                    { "data": "data.searchImprShare" },
+                    { "data": "data.searchExactMatchIS" },
+                    {
+                        "data": "data.analytics.ga_users",
+                        "render": function(data, type, row, meta) {
+                            //console.log(data);
+                            //console.log(typeof data);
+                            if (typeof data != "undefined") {
+                                data = makeComparisions(data, type, row, "ga_users", "analytics");
+                            }
+                            return data;
+                        },
+                        "defaultContent": "0"
+                    },
+                    {
+                        "data": "data.analytics.ga_newUsers",
+                        "render": function(data, type, row, meta) {
+                            if (typeof data != "undefined") {
+                                data = makeComparisions(data, type, row, "ga_newUsers", "analytics");
+                            }
+                            return data;
+                        },
+                        "defaultContent": "0"
+                    },
+                    {
+                        "data": "data.analytics.ga_sessions",
+                        "render": function(data, type, row, meta) {
+                            if (typeof data != "undefined") {
+                                data = makeComparisions(data, type, row, "ga_sessions", "analytics");
+                            }
+                            return data;
+                        },
+                        "defaultContent": "0"
+                    },
+                    {
+                        "data": "data.analytics.ga_avgSessionDuration",
+                        "render": function(data, type, row, meta) {
+                            if (typeof data != "undefined") {
+                                data = makeComparisions(data, type, row, "ga_avgSessionDuration", "analytics");
+                            }
+                            return data;
+                        },
+                        "defaultContent": "0.00"
+                    },
+                    {
+                        "data": "data.analytics.ga_bounceRate",
+                        "render": function(data, type, row, meta) {
+                            if (typeof data != "undefined") {
+                                data = makeComparisions(data, type, row, "ga_bounceRate", "analytics", true);
+                            }
+                            return data;
+                        },
+                        "defaultContent": "0.00"
+                    },
+                ],
+                "drawCallback": function(settings, json) {
+                    console.log("Table loaded");
+                    $('[rel="tooltip"]').tooltip();
+                    $(".IncreasedValue").parent().css("background", "#27ae60");
+                    $(".DecreasedValue").parent().css("background", "#c0392b");
+                    //$(".NoChangeValue").parent().css("background","#c0392b");
+
+                },
+                "initComplete": function(settings, json) {
+                    console.log('DataTables has finished its initialisation.');
+                    $('[rel="tooltip"]').tooltip();
+
+                    callback();
+
+                    console.log("Fired single table load");
+                    $('[rel="tooltip"]').tooltip();
+                    var api = this.api();
+
+                    function addSumInFooter(n) {
+                        var returnValue;
+                        api.column(n).every(function() {
+                            var column = this;
+                            var sum = column
+                                .data()
+                                .reduce(function(a, b) {
+                                    a = parseFloat(a, 10);
+                                    if (isNaN(a)) { a = 0; }
+
+                                    b = parseFloat(b, 10);
+                                    if (isNaN(b)) { b = 0; }
+
+                                    return a + b;
+                                });
+                            console.log('Sum: ' + sum);
+
+                            returnValue = sum;
+                        });
+
+                        return returnValue.toFixed(2);
+                    }
+
+                    function addAvgInFooter(n) {
+                        api.column(n).every(function() {
+                            var column = this;
+                            var tempCounter = 0;
+                            var avg = column
+                                .data()
+                                .reduce(function(a, b) {
+                                    a = parseFloat(a);
+                                    if (isNaN(a)) { a = 0; }
+
+                                    b = parseFloat(b);
+                                    if (isNaN(b)) { b = 0; }
+                                    if (a == 0 || b == 0) {
+
+                                    } else {
+                                        tempCounter++;
+                                    }
+
+                                    return (a * 1) + (b * 1);
+
+                                });
+                            console.log("tempCounter" + tempCounter);
+                            console.log("column.data().count()" + column.data().count());
+                            avg = avg / tempCounter;
+                            avg = parseFloat((avg).toFixed(2));
+                            console.log('Avg: ' + avg);
+                            $(column.footer()).html("Avg: " + avg);
+
+                        });
+                    }
+                    var clicks = addSumInFooter(2);
+                    var impressions = addSumInFooter(3);
+                    $(api.column(2).footer()).html("Sum: " + clicks);
+                    $(api.column(3).footer()).html("Sum: " + impressions);
+                    var ctr = (clicks / impressions) * 100;
+                    $(api.column(4).footer()).html(parseFloat((ctr).toFixed(2)));
+
+
+                    //addAvgInFooter(5);
+                    var cost = addSumInFooter(6);
+                    $(api.column(5).footer()).html(parseFloat(cost / clicks).toFixed(2));
+                    var conversions = addSumInFooter(8);
+                    $(api.column(6).footer()).html("Sum: " + cost);
+
+                    addAvgInFooter(7);
+
+                    $(api.column(8).footer()).html(conversions);
+
+                    addAvgInFooter(9);
+
+                    var costperconv = cost / conversions;
+                    $(api.column(9).footer()).html(parseFloat((costperconv).toFixed(2)));
+                    var convrate = (conversions / clicks) * 100;
+                    $(api.column(10).footer()).html(parseFloat((convrate).toFixed(2)));
+                    addAvgInFooter(11);
+                    addAvgInFooter(12);
+
+                    $(api.column(13).footer()).html("Sum: " + addSumInFooter(13));
+                    $(api.column(15).footer()).html("Sum: " + addSumInFooter(15));
+                    addAvgInFooter(16);
+
+                    $(api.column(0).footer()).html("Total");
+                }
+
+            });
+
+    }
+
+
+    function loadTableSingle(url) {
+        table.destroy();
+        table = $('#example1').DataTable({
+            "processing": true,
+            "ajax": url,
+            "columns": [{
+                    "data": "name",
+                    "render": function(data, type, row, meta) {
+                        if (type === 'display') {
+                            //dataGlobalOld.data.clicks
+                            var WhiteSpacesRemovedData = data.replace(/[^a-zA-Z]/g, "");
+                            data = '<a href="#' + WhiteSpacesRemovedData + '">' + data + '</a>';
+                        }
+                        return data;
+                    }
+
+                },
+                { "data": "data.defaultMaxCPC" },
+                { "data": "data.clicks" },
+                { "data": "data.impressions" },
+                { "data": "data.ctr" },
+                { "data": "data.avgCPC" },
+                { "data": "data.cost" },
+                { "data": "data.avgPosition" },
+                { "data": "data.conversions" },
+                { "data": "data.costConv" },
+                { "data": "data.convRate" },
+                { "data": "data.searchImprShare" },
+                { "data": "data.searchExactMatchIS" },
+                {
+                    "data": "data.analytics.ga_users",
+                    "defaultContent": "0"
+                },
+                {
+                    "data": "data.analytics.ga_newUsers",
+                    "defaultContent": "0"
+                },
+                {
+                    "data": "data.analytics.ga_sessions",
+                    "defaultContent": "0"
+                },
+                {
+                    "data": "data.analytics.ga_avgSessionDuration",
+                    "defaultContent": "0.00"
+                },
+                {
+                    "data": "data.analytics.ga_bounceRate",
+                    "defaultContent": "0.00"
+                },
+            ],
+            "initComplete": function(settings, json) {
+                console.log("Fired single table load");
+                $('[rel="tooltip"]').tooltip();
+                var api = this.api();
+
+                function addSumInFooter(n) {
+                    var returnValue;
+                    api.column(n).every(function() {
+                        var column = this;
+                        var sum = column
+                            .data()
+                            .reduce(function(a, b) {
+                                a = parseFloat(a, 10);
+                                if (isNaN(a)) { a = 0; }
+
+                                b = parseFloat(b, 10);
+                                if (isNaN(b)) { b = 0; }
+
+                                return a + b;
+                            });
+                        console.log('Sum: ' + sum);
+
+                        returnValue = sum;
+                    });
+
+                    return returnValue.toFixed(2);
+                }
+
+                function addAvgInFooter(n) {
+                    api.column(n).every(function() {
+                        var column = this;
+                        var avg = column
+                            .data()
+                            .reduce(function(a, b) {
+                                a = parseFloat(a);
+                                if (isNaN(a)) { a = 0; }
+
+                                b = parseFloat(b);
+                                if (isNaN(b)) { b = 0; }
+
+                                return (a * 1) + (b * 1);
+                            });
+                        avg = avg / column.data().count();
+                        avg = parseFloat((avg).toFixed(2));
+                        console.log('Avg: ' + avg);
+                        $(column.footer()).html("Avg: " + avg);
+
+                    });
+                }
+                var clicks = addSumInFooter(2);
+                var impressions = addSumInFooter(3);
+                $(api.column(2).footer()).html("Sum: " + clicks);
+                $(api.column(3).footer()).html("Sum: " + impressions);
+                var ctr = (clicks / impressions) * 100;
+                $(api.column(4).footer()).html(parseFloat((ctr).toFixed(2)));
+
+                addAvgInFooter(5);
+                var cost = addSumInFooter(6);
+                var conversions = addSumInFooter(8);
+                $(api.column(6).footer()).html("Sum: " + cost);
+
+                addAvgInFooter(7);
+
+                $(api.column(8).footer()).html(conversions);
+
+                addAvgInFooter(9);
+
+                var costperconv = cost / conversions;
+                $(api.column(9).footer()).html(parseFloat((costperconv).toFixed(2)));
+                var convrate = (conversions / clicks) * 100;
+                $(api.column(10).footer()).html(parseFloat((convrate).toFixed(2)));
+                addAvgInFooter(11);
+                addAvgInFooter(12);
+
+                $(api.column(13).footer()).html("Sum: " + addSumInFooter(13));
+                $(api.column(15).footer()).html("Sum: " + addSumInFooter(15));
+                addAvgInFooter(16);
+
+                $(api.column(0).footer()).html("Total");
+            }
+        });
+    }
+
+    function addReloadButton() {
+        $('<button id="refresh" class="btn btn-primary btn-sm" onclick="reloadTable();">Refresh</button>').appendTo('div.dataTables_filter');
+    }
+
+
+    $(function() {
+
+        //var yesterdayData;
+        //yesterday's data to be loaded first
+        var yesterday = moment().subtract(1, 'day').format("YYYY-MM-DD");
+        loadYesterdayData(yesterday, yesterday, true, "http://167.99.159.221/data");
+
+        /*    $('#example1').on( 'xhr', function (e) {
+            e.preventDefault();
+            dataGlobal = table.ajax.json();
+            console.log("old data");
+            console.log(dataGlobal);
+
+            return false;
+            //console.log( json.data.length +' row(s) were loaded' );
+            });*/
+
+
+        //on hover get details of the change
+
+        /*    $(document).on({
+            mouseenter: function () {
+                //stuff to do on mouse enter
+                console.log("hovered on cell!");
+                console.log(this);
+                var oldValue = $(this).attr("oldvalue");
+                var newValue = $(this).attr("newvalue");
+                console.log(oldValue);
+                console.log(newValue);
+
+            },
+            mouseleave: function () {
+                //stuff to do on mouse leave
+            }
+        }, ".IncreasedValue"); //pass the element as an argument to .on*/
+
+        $('[rel="tooltip"]').tooltip();
+
+
+        $('#example1 tbody').on('click', 'a', function() {
+
+            console.log("selected");
+            console.log($(this).text());
+            var title = $(this).text();
+
+            var result = $.grep(dataGlobal.data, function(element, index) {
+                //console.log(element);
+                if (element.data.adGroup === title) {
+                    console.log("found!");
+                    console.log(element.data.sessions);
+                    //put this data in new table
+                    //go to .nav-tabs and append a new list
+                    var WhiteSpacesRemovedData = title.replace(/[^a-zA-Z]/g, "");
+                    $(".nav-tabs").append('<li><a data-toggle="tab" href="#' + WhiteSpacesRemovedData + '">' + title + '<i class="fa fa-times closeTab"></i></a></li>');
+                    $(".tab-content").append('<div id="' + WhiteSpacesRemovedData + '" class="tab-pane"></div>');
+
+                    createTable(WhiteSpacesRemovedData);
+                    $.each(element.data.sessions, function(index, value) {
+
+                        var row = "<tr><td>" + value.ga_adGroup + "</td><td>" + value.ga_adMatchedQuery + "</td><td>" + value.ga_city + "</td><td>" + value.ga_country + "</td><td>" + moment(value.ga_date, "YYYYMMDD").format("DD-MM-YYYY") + "</td><td>" + moment(value.ga_dateHourMinute, "YYYYMMDDHHmm").format("h:mm A") + "</td><td>" + value.ga_goal1Completions + "</td><td>" + value.ga_sessionDuration + "</td><td>" + value.ga_sourceMedium + "</td></tr>";
+                        var tempSelector = "#" + WhiteSpacesRemovedData + " tbody";
+                        $(tempSelector).append(row);
+                    });
+
+                    //now trigger a click
+                    var liItemSelector = "li a[href='#" + WhiteSpacesRemovedData + "']";
+                    $(liItemSelector).trigger('click');
+                    console.log("triggered");
+                }
+            });
+
+
+        });
+
+        $('#tabbedListItems').delegate('.closeTab', 'click', function() {
+            console.log($(this).parent().attr("href"));
+            var itemsHref = $(this).parent().attr("href");
+            //remove list item 
+            $(this).closest("li").remove();
+            //show other tab
+            $('#tabbedListItems li').children('a').first().click(); // Select first tab
+            $('#home').removeClass("fade").addClass("active");
+            //remove tabbed content
+            $(itemsHref).remove();
+
+        });
+
+    });
+
+    function createTable(tableDiv) {
+        //var myTableDiv = document.getElementById("box");
+        var wrapper = document.getElementById(tableDiv);
+        wrapper.innerHTML = '<div class="box-body table-responsive"><table id="example" class="table table-bordered"><thead><tr><th>adGroup</th><th>AdMatchedQuery</th><th>City</th><th>Country</th><th>Date</th><th>Time</th><th>GoalCompletion</th><th>Session Duration</th><th>Source Medium</th></tr></thead><tbody></tbody></table></div>';
+    }
+
+    function getDatesFromPicker() {
+        //clear the yesterday data;
+        //yesterdayData = {};
+        console.log("clicked apply button");
+        console.log($('.dr1.from').val());
+        console.log($('.dr1.to').val());
+        console.log($('.dr2.from').val());
+        console.log($('.dr2.to').val());
+
+        var dr1_from = $('.dr1.from').val();
+        var dr1_to = $('.dr1.to').val();
+        var dr2_from = $('.dr2.from').val();
+        var dr2_to = $('.dr2.to').val();
+        //check if the values are not empty or undefined
+        if (dr1_from != "" && dr1_to != "" && ($(".enable-comparison").is(":checked") == false)) {
+            dr1_from = moment(dr1_from, "DD-MM-YYYY").format("YYYY-MM-DD");
+            dr1_to = moment(dr1_to, "DD-MM-YYYY").format("YYYY-MM-DD");
+            console.log(dr1_from);
+            console.log(dr1_to);
+            var urlTemp = "http://167.99.159.221/data/date-range/" + dr1_from + "/" + dr1_to;
+            //getData(urlTemp);
+            loadTableSingle(urlTemp);
+        } else {
+            console.log("dr1 from and dr1 to empty or checkbox is not checked");
+        }
+
+        if (dr2_from != "" && dr2_to != "" && ($(".enable-comparison").is(":checked") == true)) {
+            dr1_from = moment(dr1_from, "DD-MM-YYYY").format("YYYY-MM-DD");
+            dr1_to = moment(dr1_to, "DD-MM-YYYY").format("YYYY-MM-DD");
+
+            dr2_from = moment(dr2_from, "DD-MM-YYYY").format("YYYY-MM-DD");
+            dr2_to = moment(dr2_to, "DD-MM-YYYY").format("YYYY-MM-DD");
+
+            console.log(dr2_from);
+            console.log(dr2_to);
+
+            //load data for dr1
+            var urlTemp = "http://167.99.159.221/data/date-range/" + dr1_from + "/" + dr1_to;
+
+            loadYesterdayData(dr2_from, dr2_to, false, urlTemp);
+            //getData(urlTemp);
+
+            //do the comparision work now
+
+
+        } else {
+
+        }
+
+    };
+
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+    </script>
+    <script type="text/javascript">
+    $oldJquery(document).ready(function() {
+
+
+        $oldJquery('.pickerContainer.widget').DateRangesWidget();
+        //$oldJquery('.pickerContainer.widget').DatePickerSetDate(todayDate());
+
+        /*prettyPrint(); date: [moment(), moment()]*/
+    });
+
+
+
+    /*$(function() {
+
+        var start = moment().subtract(29, 'days');
+        var end = moment();
+
+        function cb(start, end) {
+            $('#reportrange span').html(start.format('YYYY-MM-DD') + ' / ' + end.format('YYYY-MM-DD'));
+        }*/
+
+    /*$('#reportrange').daterangepicker({
+        startDate: start,
+        endDate: end,
+        ranges: {
+           'Today': [moment(), moment()],
+           'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+           'This Month': [moment().startOf('month'), moment().endOf('month')],
+           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    }, cb);
+
+    cb(start, end);*/
+
+
+    /*  $("body > div.daterangepicker.ltr.show-ranges.opensright > div.ranges > ul").append("<li data-range-key=''>Last X Days</li>").on("click",showCustomNumber);
+
+    });
+
+    /*function showCustomNumber(){
+      $("#customNumber").removeClass("hidden").focus();
+      console.log("showing!");
+    }
+
+     $('#reportrange').on('apply.daterangepicker', function(ev, picker) {
+      console.log(picker.startDate.format('YYYY-MM-DD'));
+      console.log(picker.endDate.format('YYYY-MM-DD'));
+      var urlTemp = "http://167.99.159.221/data/date-range/"+picker.startDate.format('YYYY-MM-DD')+"/"+picker.endDate.format('YYYY-MM-DD');
+        getData(urlTemp);
+
+    });
+
+     $("#customNumber").on("change",function(){
+        console.log($("#customNumber").val());
+        var NumberOfDays = $("#customNumber").val();
+        var urlTempData = "http://167.99.159.221/data/days/"+NumberOfDays;
+        getData(urlTempData);
+
+     });*/
+    </script>
+    <script type="text/javascript">
+    function reloadTable() {
+        console.log("Reloading Table...");
+        table.ajax.reload(null, false); // user paging is not reset on reload
+    }
+
+    function getData(url) {
+        $(".wrapper").css("opacity", 0.5);
+        $("#loader").css("display", "block");
+        $('#example1').DataTable().ajax.url(url).load();
+        $(".wrapper").css("opacity", 1);
+        $("#loader").css("display", "none");
+
+        /*$(".wrapper").css("opacity",0.5);
+    $("#loader").css("display","block");
+    $.ajax({
+      url: url, 
+      contentType: 'application/json', 
+      type:"GET",
+      success: function(data){
+              console.log(data);
+              dataGlobal = data;
+              $("#tableBody").empty();
+              $.each(data.data, function( index, value ) {
+                var tempSession =value.sessions
+                 var markup = "<tr><td onclick='showSessionData(\""+ value.adGroup +"\");'>" + value.adGroup + "</td><td>" + value.defaultMaxCPC + "</td><td>" + value.clicks + "</td><td>" + value.impressions + "</td><td>" + value.ctr + "</td><td>" + value.avgCPC + "</td><td>" + value.cost + "</td><td>" + value.avgPosition + "</td><td>" + value.conversions + "</td><td>" + value.costConv + "</td><td>" + value.convRate + "</td><td>" + value.searchImprShare + "</td><td>" + value.searchExactMatchIS + "</td>";
+                 try
+            {
+                if(Object.keys(value.analytics).length){
+                    markup+=
+                    "<td>"+value.analytics.ga_users+"</td>"+
+                    "<td>"+value.analytics.ga_newUsers+"</td>"+
+                    "<td>"+value.analytics.ga_sessions+"</td>"+
+                    "<td>"+value.analytics.ga_avgSessionDuration+"</td>"+
+                    "<td>"+value.analytics.ga_bounceRate+"</td>"+"</tr>"; 
+                }
+            }
+        catch(err){
+            
+                markup+=
+                "<td></td>"+
+                "<td></td>"+
+                "<td></td>"+
+                "<td></td>"+
+                "<td></td>"+
+                "<td></td>"+
+                "</tr>";           
+        }       
+                 $("#tableBody").append(markup);
+              });
+              $(".wrapper").css("opacity",1);
+              $("#loader").css("display","none");
+      }
+
+    })
+   */
+    }
+
+    function showSessionData(productTitle) {
+        console.log(productTitle);
+        //console.log(dataGlobal);
+        /*$.each(productTitle.sessions in dataGlobal.data,function(index, value) {
+            //$("div").append('<img src="' + value + '" />');
+            console.log(value);
+        })*/
+
+    }
+    </script>
+    </body>
+
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>LOG IN | GENESIS</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='dist/css/paper_bootstrap.min.css') }}">
+    <style type="text/css">
+    body {
+        background: linear-gradient( rgba(20, 20, 20, .5),
+        rgba(20, 20, 20, .5)), url("../static/dist/img/genesisbg.jpg");
+
+        /* Center and scale the image nicely */
+        /* background-position: center;*/
+        background-size: cover;
+        color: #FFF;
+    }
+
+    h1,
+    h2,
+    h3,
+    .form-control {
+        color: #FFF;
+    }
+
+    select {
+        color: #333;
+    }
+
+    select option {
+        color: #000;
+    }
+
+    #loader{
+     
+      display: none;
+      z-index: 999;
+    }
+    .signUpArea {
+        background-color: #40409a;
+        float: right;
+        padding-right: 75px;
+        margin-top: 3%;
+    }
+
+    .signUpArea::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0%;
+        width: 20%;
+        height: 100%;
+        background: #40409a;
+        border-color: #40409a;
+        border-radius: 65% 0 0 65%;
+        box-shadow: -130px 0px 0 160px #40409a;
+        z-index: -1;
+    }
+
+    .signupBtn {
+        border-radius: 50px;
+        padding: 8px 30px;
+    }
+
+    #loginError{
+    	color: red;
+    }
+
+    @media (min-width: 1920px) and (max-width: 2048px) {
+        .signUpArea {
+            margin-top: 10%;
+            padding-right: 150px;
+        }
+    }
+
+    @media (min-width: 1025px) and (max-width: 1919px) {
+        .signUpArea {
+            margin-top: 10%;
+            padding-right: 100px;
+        }
+    }
+    </style>
+</head>
+
+<body>
+    <div class="signUpArea">
+        <form id="loginForm">
+            <h2>Login!</h2>
+            <br>
+            <label for="email">EMAIL</label>
+            <input type="email" name="client_email" id="email" placeholder="yourname@company.com" class="form-control" required>
+            <br>
+            <label for="password">PASSWORD</label>
+            <input type="password" name="client_password" id="password" placeholder="Password" class="form-control" required>
+            <br>
+            <center>
+
+                <button class="btn btn-danger signupBtn">LOG IN</button>
+                <div id="loader"><img src="{{ url_for('static', filename='loader/loaderlogin.gif') }}" width="50"></div>
+            </center>
+            <p id="loginError"></p>
+        </form>
+    </div>
+     <!-- jQuery 3 -->
+    <script src="{{ url_for('static', filename='plugins/jquery/dist/jquery.min.js') }}"></script>
+    <script type="text/javascript">
+    	function getFormData($form){
+    var unindexed_array = $form.serializeArray();
+    var indexed_array = {};
+
+    $.map(unindexed_array, function(n, i){
+        indexed_array[n['name']] = n['value'];
+    });
+
+    return indexed_array;
+}
+
+    $("#loginForm").submit(function(event) {
+    	//intiate loader
+        $("#loader").css("display", "block");
+
+        // body...
+        event.preventDefault(); // Prevent the form from submitting via the browser
+        var form = $(this);
+        var Send_data = getFormData(form);
+        var urlSignIn = "http://167.99.159.221/signin";
+        var tempSend = JSON.stringify(Send_data);
+        console.log(tempSend);
+        $.ajax({
+            type: "POST",
+            url: urlSignIn,
+            contentType: "application/json; charset=utf-8",
+            data: tempSend,
+            success: function(data){
+            	$("#loader").css("display", "none");
+            	console.log(data);
+            	//check if manager_account_id is present in response
+            	console.log(data.manager_account_id);
+            	if(data.manager_account_id){
+            		//redirect to dashboard
+            		window.localStorage.manager_account_id = data.manager_account_id;
+            		window.location.href = "/";
+      		
+            	}else if(data.manager_account_id == null){
+            		console.log("User doesn't exists!");
+            		$("#loginError").text("Error! Either password doesn't match or user doesn't exists!");
+            	}
+            },
+            error: function(jqXHR, error, errorThrown) {  
+               if(jqXHR.status&&jqXHR.status==400){
+                    console.log(jQuery.parseJSON(jqXHR.responseText)); 
+               }else{
+               	   console.log(jQuery.parseJSON(jqXHR.responseText)); 
+                   console.log("Something went wrong");
+               }
+          }
+        });
+    });
+    </script>
+</body>
+
+</html>
