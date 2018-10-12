@@ -1,14 +1,14 @@
 # Documentation for Genesis
 
-This website was build using [`jQuery`](https://jquery.com/) in the Frontend. And Python Flask server at the backend.
+This website was build using [`jQuery`](https://jquery.com/) in the Frontend. And ['Python Flask Server'](http://flask.pocoo.org/) at the backend.
 
 Here is a full list of dependencies used:
 * `Bootstrap`
+* `jQuery`
 * `Fontawesome icons`
 * `chart.js`
+* `moment.js`
 * `datatables`
-* `date-range`
-* `jQuery`
 
 All the static content should be kept in `static` folder. Whereas the bare HTML files hereafter referred as templates are stored in `templates` directory.
 
@@ -34,7 +34,7 @@ As mentioned above All the static content should be kept in `static` folder and 
 
 ### `./static`
 
-As the name suggests `./static` directory contains all the static content in the website. All the Cascading Style Sheets (CSS), JavaScript files, And images, icons, resources, etc are stored in this folder.
+As the name suggests `./static` directory contains all the static content in the website. All the Cascading Style Sheets (CSS), JavaScript files, Images, Icons, Resources, etc are stored in this folder.
 
 ### `./templates`
 
@@ -82,5 +82,5 @@ The name of each function is descriptive enough to give some idea about the usag
 ## Hosting
 
 The project is hosted on Heroku.
-You need to push this codebase to heroku server via heroku cli to update anything.
+You need to push this codebase to Heroku server via ['Heroku CLI'](https://devcenter.heroku.com/articles/heroku-command-line) to update anything.
 Here's the live project's URL: http://genesis-web.herokuapp.com
