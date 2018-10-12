@@ -1,6 +1,6 @@
 # Documentation for Genesis
 
-This website was build using [`jQuery`](https://jquery.com/) in the Frontend. And ['Python Flask Server'](http://flask.pocoo.org/) at the backend.
+This website was build using [`jQuery`](https://jquery.com/) in the Frontend. And [`Python Flask Server`](http://flask.pocoo.org/) at the backend.
 
 Here is a full list of dependencies used:
 * `Bootstrap`
@@ -82,5 +82,5 @@ The name of each function is descriptive enough to give some idea about the usag
 ## Hosting
 
 The project is hosted on Heroku.
-You need to push this codebase to Heroku server via ['Heroku CLI'](https://devcenter.heroku.com/articles/heroku-command-line) to update anything.
+You need to push this codebase to Heroku server via [`Heroku CLI`](https://devcenter.heroku.com/articles/heroku-command-line) to update anything.
 Here's the live project's URL: http://genesis-web.herokuapp.com
