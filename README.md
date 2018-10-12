@@ -82,3 +82,4 @@ The name of each function is descriptive enough to give some idea about the usag
 
 The project is hosted on Heroku.
 You need to push this codebase to heroku server via heroku cli to update anything.
+Here's the live project's URL: http://genesis-web.herokuapp.com
