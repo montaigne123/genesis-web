@@ -38,7 +38,7 @@ As the name suggests `./static` directory contains all the static content in the
 
 ### `./templates`
 
-All the templates used in the website are placed in this folder. The templates basically follow Jinja Templating style to reuse header, sidebar and footer.
+All the templates used in the website are placed in this folder. The templates basically follow [`Jinja Templating Style`](http://jinja.pocoo.org/docs/2.10/templates/) to reuse header, sidebar and footer.
 
 Example: {% include 'header.html' %}
 
