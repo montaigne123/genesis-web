@@ -3,12 +3,12 @@
 This website was build using [`jQuery`](https://jquery.com/) in the Frontend. And Python Flask server at the backend.
 
 Here is a full list of dependencies used:
-* `bootstrap`
-* `fontawesome icons`
+* `Bootstrap`
+* `Fontawesome icons`
 * `chart.js`
 * `datatables`
 * `date-range`
-* `ionicons`
+* `jQuery`
 
 All the static content should be kept in `static` folder. Whereas the bare HTML files hereafter referred as templates are stored in `templates` directory.
 
@@ -16,11 +16,13 @@ All the static content should be kept in `static` folder. Whereas the bare HTML 
 
 To run the project:
 ```bash
-$ git clone https://github.com/abdulghani200/genesis-web
+$ git clone https://github.com/montaigne123/genesis-web
 $ cd genesis-web
 $ pip install requirements.txt
 $ python application.py
 ```
+Now you'll have the project running on your localhost at port 5000.
+
 ## Folder structure
 
 There are 2 main folders :
