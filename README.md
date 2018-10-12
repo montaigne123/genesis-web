@@ -42,7 +42,8 @@ All the templates used in the website are placed in this folder. The templates b
 
 Example: {% include 'header.html' %}
 
-Functions:
+---
+## Functions:
 
 Most of the functions are self-contained. Here is an outline of all the functions used in this project:
 
